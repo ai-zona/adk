@@ -1,0 +1,65 @@
+name: Publish to npm
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to publish (all, adk, adk-cli, adk-server, aza-client, workspace-types)'
+        required: true
+        default: 'all'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build packages
+        run: pnpm run build
+        
+      - name: Publish @aizona/adk
+        if: inputs.package == 'all' || inputs.package == 'adk' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/adk && npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish @aizona/adk-cli
+        if: inputs.package == 'all' || inputs.package == 'adk-cli' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/adk-cli && npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish @aizona/adk-server
+        if: inputs.package == 'all' || inputs.package == 'adk-server' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/adk-server && npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish @aizona/aza-client
+        if: inputs.package == 'all' || inputs.package == 'aza-client' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/aza-client && npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Publish @aizona/workspace-types
+        if: inputs.package == 'all' || inputs.package == 'workspace-types' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/workspace-types && npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
