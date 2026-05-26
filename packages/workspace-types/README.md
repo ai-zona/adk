@@ -1,4 +1,4 @@
-# @aizona/contracts-workspace-architect
+# @aizonaai/contracts-workspace-architect
 
 Day-0 contracts substrate for the Workspace Architect feature
 (spec: `docs/superpowers/specs/2026-04-25-conversational-workspace-architect.md`).
@@ -42,12 +42,12 @@ source of truth that every stream imports.
 Streams import via the deep paths declared in `package.json` `exports`:
 
 ```ts
-import { workspaceManifestSchema, type WorkspaceManifest } from "@aizona/contracts-workspace-architect/manifest";
-import { ipcMessageSchema } from "@aizona/contracts-workspace-architect/ipc";
-import { CAPABILITY_IDS } from "@aizona/contracts-workspace-architect/capabilities";
+import { workspaceManifestSchema, type WorkspaceManifest } from "@aizonaai/contracts-workspace-architect/manifest";
+import { ipcMessageSchema } from "@aizonaai/contracts-workspace-architect/ipc";
+import { CAPABILITY_IDS } from "@aizonaai/contracts-workspace-architect/capabilities";
 ```
 
-The flat `from "@aizona/contracts-workspace-architect"` import is the
+The flat `from "@aizonaai/contracts-workspace-architect"` import is the
 public re-export for convenience.
 
 ## Adding a contract

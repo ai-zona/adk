@@ -1,4 +1,4 @@
-import { db } from "@aizona/db";
+import { db } from "../db";
 import Redis from "ioredis";
 import { MCPClient } from "../client/mcp-client";
 import type { HealthCheckResult } from "../types";

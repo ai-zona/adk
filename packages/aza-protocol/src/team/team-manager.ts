@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { db } from "@aizona/db";
+import { db } from "../db";
 import type Redis from "ioredis";
 import { RedisStreamTransport } from "../transport/redis-streams";
 import { AZAError, AZAErrorCode } from "../types/errors";

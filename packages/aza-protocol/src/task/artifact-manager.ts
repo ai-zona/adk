@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { db } from "@aizona/db";
+import { db } from "../db";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { AZAError, AZAErrorCode } from "../types/errors";
 

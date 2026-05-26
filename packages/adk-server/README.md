@@ -1,18 +1,18 @@
-# @aizona/adk-server
+# @aizonaai/adk-server
 
 REST API server for the AIZona Agent Development Kit. Built on [Hono](https://hono.dev/) with API key auth, rate limiting, usage tracking, and an OpenAI-compatible chat proxy.
 
 ## Installation
 
 ```bash
-pnpm add @aizona/adk-server
+pnpm add @aizonaai/adk-server
 ```
 
 ## Quick Start
 
 ```typescript
-import { createServer, startStandaloneServer } from "@aizona/adk-server";
-import { createProvider } from "@aizona/adk";
+import { createServer, startStandaloneServer } from "@aizonaai/adk-server";
+import { createProvider } from "@aizonaai/adk";
 
 const provider = createProvider({ providerId: "anthropic", apiKey: "sk-..." });
 
@@ -130,7 +130,7 @@ GET    /openapi.json        — OpenAPI specification
 ## Storage Backends
 
 ```typescript
-import { createMemoryStorage, createPrismaStorage } from "@aizona/adk-server";
+import { createMemoryStorage, createPrismaStorage } from "@aizonaai/adk-server";
 
 // In-memory (development)
 const app = createServer({ storage: createMemoryStorage() });
@@ -142,7 +142,7 @@ const app = createServer({ storage: createPrismaStorage(prismaClient) });
 ## Standalone Server
 
 ```typescript
-import { startStandaloneServer } from "@aizona/adk-server";
+import { startStandaloneServer } from "@aizonaai/adk-server";
 
 startStandaloneServer({ port: 3456 });
 // => ADK Server listening on http://localhost:3456

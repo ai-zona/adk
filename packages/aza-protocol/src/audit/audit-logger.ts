@@ -1,4 +1,4 @@
-import { db } from "@aizona/db";
+import { db } from "../db";
 import type Redis from "ioredis";
 import { AZAError, AZAErrorCode } from "../types/errors";
 import type { AZAEnvelope } from "../types/messages";

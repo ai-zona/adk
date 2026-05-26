@@ -1,4 +1,4 @@
-import { db } from "@aizona/db";
+import { db } from "../db";
 import { OutputSanitizer } from "../safety/output-sanitizer";
 
 // ──────────────────────────────────────────────────────

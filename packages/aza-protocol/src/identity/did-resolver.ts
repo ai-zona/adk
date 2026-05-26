@@ -1,4 +1,4 @@
-import { db } from "@aizona/db";
+import { db } from "../db";
 import Redis from "ioredis";
 import { z } from "zod";
 import type { AgentCard } from "./agent-card";
@@ -207,21 +207,19 @@ export class DIDResolver {
 
   private async resolveFromDB(did: string): Promise<DIDDocument | null> {
     try {
-      const rows = await db.$queryRawUnsafe<
-        Array<{
-          did: string;
-          public_key: string;
-          agent_card: string | null;
-          created_at: string;
-          updated_at: string;
-        }>
-      >(
+      const rows = (await (db.$queryRawUnsafe as (sql: string, ...params: unknown[]) => Promise<unknown>)(
         `SELECT did, public_key, agent_card, created_at, updated_at
          FROM aza.aza_did_documents
          WHERE did = $1
          LIMIT 1`,
         did,
-      );
+      )) as Array<{
+        did: string;
+        public_key: string;
+        agent_card: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
 
       const row = rows[0];
       if (!row) return null;

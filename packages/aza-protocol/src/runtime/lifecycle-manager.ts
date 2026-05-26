@@ -1,4 +1,4 @@
-import { db } from "@aizona/db";
+import { db } from "../db";
 import type Redis from "ioredis";
 import { ExecutionLogger } from "./execution-logger";
 import type { LogEntry } from "./execution-logger";
