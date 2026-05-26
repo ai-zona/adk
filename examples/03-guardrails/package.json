@@ -1,0 +1,23 @@
+{
+  "name": "adk-example-03-guardrails",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Defend an agent with content filter, PII redaction, budget cap, and consent gate",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aizonaai/adk": "^0.1.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,90 +1,109 @@
-# @aizona/adk
+# @aizonaai/adk
 
-[![npm version](https://img.shields.io/npm/v/@aizona/adk.svg)](https://www.npmjs.com/package/@aizona/adk)
-[![npm downloads](https://img.shields.io/npm/dm/@aizona/adk.svg)](https://www.npmjs.com/package/@aizona/adk)
-[![license](https://img.shields.io/npm/l/@aizona/adk.svg)](LICENSE)
-[![node](https://img.shields.io/node/v/@aizona/adk.svg)](https://nodejs.org)
+[![npm version](https://img.shields.io/npm/v/@aizonaai/adk.svg)](https://www.npmjs.com/package/@aizonaai/adk)
+[![npm downloads](https://img.shields.io/npm/dm/@aizonaai/adk.svg)](https://www.npmjs.com/package/@aizonaai/adk)
+[![license](https://img.shields.io/npm/l/@aizonaai/adk.svg)](LICENSE)
+[![node](https://img.shields.io/node/v/@aizonaai/adk.svg)](https://nodejs.org)
 
-**Agent Development Kit** — Build, deploy, and orchestrate AI agents. Zero platform dependencies (only `zod`). ESM + CJS dual publish, full TypeScript.
-
-## Features
-
-- **Multi-agent orchestration** — Handoffs (Swarm pattern), parallel runners, team coordination
-- **6 built-in LLM providers** — Anthropic, OpenAI, Google, xAI, Ollama, LMStudio with routing strategies
-- **Guardrails engine** — Content filters, budget limits, PII redaction, consent gating
-- **Skills system** — Define and compose reusable agent behaviors (publishing, research, outreach)
-- **Eval harness** — Structured evaluation framework with scoring and reporting
-- **Streaming** — SSE + WebSocket relay, typed event bus (16 event types)
-- **Memory** — Vector-based semantic memory with pgvector backend and auto-decay
-- **MCP integration** — Connect to Model Context Protocol servers
-- **Realtime / Voice** — Voice conversation support via Anthropic Realtime API
-
-## Installation
+**Agent Development Kit** — build, deploy, and orchestrate AI agents in TypeScript. Zero runtime dependencies beyond `zod`. Dual ESM + CJS publish, full TypeScript declarations, npm provenance.
 
 ```bash
-npm install @aizona/adk
+npm install @aizonaai/adk
 # or
-pnpm add @aizona/adk
+pnpm add @aizonaai/adk
 # or
-yarn add @aizona/adk
+yarn add @aizonaai/adk
 ```
 
-## CLI
+> Requires Node ≥ 20.
 
-```bash
-npx adk --help
-npx adk init my-agent    # scaffold a new project
-npx adk test agent.ts    # run guidance
-npx adk deploy agent.ts  # deploy to AIZona platform
-```
+---
 
-## Examples
-
-| Example | Description |
-|---------|-------------|
-| [hello-world](./examples/hello-world/) | Minimal agent — no tools |
-| [web-scraper](./examples/web-scraper/) | Agent with a `fetch_url` tool |
-| [email-assistant](./examples/email-assistant/) | Agent with a structured draft tool |
-
-## Quick Start
+## Five-minute quick start
 
 ```typescript
-import { defineAgent, defineTool, Runner, createProvider } from "@aizona/adk";
-
-const calculator = defineTool({
-  name: "add",
-  description: "Add two numbers",
-  inputSchema: { type: "object", properties: { a: { type: "number" }, b: { type: "number" } } },
-  execute: async (input) => ({ result: input.a + input.b }),
-});
+import { AnthropicProvider, Runner, defineAgent } from "@aizonaai/adk";
 
 const agent = defineAgent({
-  name: "math-agent",
-  instructions: "You are a helpful math assistant.",
-  tools: [calculator],
+  name: "tutor",
+  model: "claude-haiku-4-5-20251001",
+  instructions: "You are a patient programming tutor. Keep answers under 6 sentences.",
 });
 
-const provider = createProvider({ providerId: "anthropic", apiKey: process.env.ANTHROPIC_API_KEY });
-const runner = new Runner({ provider });
-const result = await runner.run(agent, { input: "What is 2 + 3?" });
-console.log(result.output); // "The answer is 5."
+const runner = new Runner({
+  provider: new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY! }),
+});
+
+const { output, usage } = await runner.run(agent, { input: "What is a closure?" });
+console.log(output);
+console.log(`cost: $${usage.totalCostUsd.toFixed(6)}`);
 ```
+
+That's the entire surface for a single-agent program. From here you add tools, guardrails, handoffs, and streaming as you need them.
+
+---
+
+## What you can build
+
+| Capability | API entry point | Example |
+| ---------- | --------------- | ------- |
+| Single agent with custom instructions | `defineAgent`, `Runner` | [01-basic-agent](https://github.com/ai-zona/adk/tree/main/examples/01-basic-agent) |
+| Tools with Zod-validated inputs | `defineTool` | [web-scraper](https://github.com/ai-zona/adk/tree/main/examples/web-scraper) |
+| Multi-agent handoffs (Swarm pattern) | `defineAgent({ handoffs })` | [02-multi-agent](https://github.com/ai-zona/adk/tree/main/examples/02-multi-agent) |
+| Guardrails (content, PII, budget, consent) | `contentFilter`, `piiFilter`, `budgetLimit`, `consentGate` | [03-guardrails](https://github.com/ai-zona/adk/tree/main/examples/03-guardrails) |
+| Token-by-token streaming | `runner.stream()`, `streamToSSE` | [04-streaming](https://github.com/ai-zona/adk/tree/main/examples/04-streaming) |
+| MCP server integration | `mcpServerTools` | [05-mcp-tools](https://github.com/ai-zona/adk/tree/main/examples/05-mcp-tools) |
+| Vector memory with decay | `MemoryManager`, `PgVectorMemoryBackend` | — |
+| Multi-provider routing | `ADKRouter` | — |
+| Sandboxed code execution | `CodeExecutor`, `createExecuteCodeTool` | — |
+| Evaluation harness | `defineEvalSuite`, `runEval` | — |
+| Voice / realtime | `RealtimeAgent` | — |
+
+---
+
+## BYOK (bring your own key)
+
+The ADK is **provider-agnostic and standalone**. You hold the API keys; the SDK never phones home.
+
+```typescript
+import { createProvider } from "@aizonaai/adk";
+
+// Local development — your key, your bill
+const provider = createProvider({
+  providerId: "anthropic",         // or "openai" | "google" | "xai" | "ollama" | "lmstudio"
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+```
+
+For production deployments, put `@aizonaai/adk-server` in front so clients never see the provider key — they present a short-lived ADK key that you mint and validate. See [docs/security.md](https://github.com/ai-zona/adk/blob/main/docs/security.md) for the full pattern.
+
+### Supported providers
+
+| Provider | `providerId` | Notes |
+| -------- | ------------ | ----- |
+| Anthropic | `anthropic` | Claude family |
+| OpenAI | `openai` | GPT family + structured outputs |
+| Google | `google` | Gemini family |
+| xAI | `xai` | Grok family |
+| Ollama | `ollama` | Self-hosted; set `OLLAMA_BASE_URL` |
+| LM Studio | `lmstudio` | Self-hosted; OpenAI-compatible |
+
+---
 
 ## Core APIs
 
 ### `defineAgent(config)`
 
-Creates an agent with instructions, tools, guardrails, and handoffs.
-
 ```typescript
 const agent = defineAgent({
   name: "my-agent",
+  model: "claude-sonnet-4-5-20250929",
   instructions: "You are a helpful assistant.", // string or (ctx) => string
-  description: "Short description for discovery",
+  description: "Short description for handoff discovery",
   tools: [myTool],
   guardrails: [contentFilter()],
-  handoffs: [{ agent: otherAgent, description: "Hand off for specialized tasks" }],
-  outputSchema: z.object({ answer: z.string() }), // structured output
+  handoffs: [{ agent: otherAgent, description: "Specialized tasks" }],
+  outputSchema: z.object({ answer: z.string() }),
   consentLevel: "auto", // auto | notify | explicit | multi_party
   maxTurns: 25,
 });
@@ -92,18 +111,16 @@ const agent = defineAgent({
 
 ### `defineTool(config)`
 
-Creates a tool with input validation and execution hooks.
-
 ```typescript
-const tool = defineTool({
+import { z } from "zod";
+
+const search = defineTool({
   name: "search",
   description: "Search the web",
   inputSchema: z.object({ query: z.string() }),
-  execute: async (input, ctx) => {
-    return { results: await search(input.query) };
-  },
+  execute: async ({ query }, ctx) => ({ results: await api(query) }),
   hooks: {
-    preExecute: async (input) => input, // modify or block
+    preExecute: async (input) => input,    // modify or block
     postExecute: async (output) => output, // transform result
   },
 });
@@ -111,84 +128,69 @@ const tool = defineTool({
 
 ### `Runner`
 
-Main execution engine. Runs agents through a turn loop: build messages → LLM call → tool execution → guardrails → handoff → repeat.
-
 ```typescript
 const runner = new Runner({ provider, eventBus, defaultMaxTurns: 25 });
 
-// Synchronous run
+// One-shot
 const result = await runner.run(agent, {
   input: "Hello",
-  messages: [], // prior conversation
-  sessionId: "session-123",
+  messages: [],         // prior conversation
+  sessionId: "s-123",
   maxTurns: 10,
-  signal: abortController.signal,
+  signal: abort.signal,
 });
 
-// Streaming run — yields events as they happen
+// Streaming
 for await (const event of runner.stream(agent, { input: "Hello" })) {
-  switch (event.type) {
-    case "turn_started": break;
-    case "text_delta": process.stdout.write(event.content); break;
-    case "tool_result": break;
-    case "handoff": break;
-    case "run_complete": console.log(event.result); break;
-  }
+  if (event.type === "text_delta") process.stdout.write(event.content);
+  if (event.type === "run_complete") console.log(event.result.usage);
 }
 ```
 
 ### Guardrails
 
-Input, output, and tool-level guardrails with tripwire support.
-
 ```typescript
-import { contentFilter, budgetLimit, consentGate } from "@aizona/adk";
+import { contentFilter, piiFilter, budgetLimit, consentGate } from "@aizonaai/adk";
 
-const agent = defineAgent({
-  name: "safe-agent",
-  instructions: "...",
+defineAgent({
+  // …
   guardrails: [
-    contentFilter({ blockedTerms: ["harmful"] }),
-    budgetLimit({ maxCostUsd: 1.0 }),
+    contentFilter({ blockedTerms: ["ignore previous"] }),
+    piiFilter({ redact: true }),
+    budgetLimit({ maxCostUsd: 0.50 }),
     consentGate({ level: "explicit" }),
   ],
 });
 ```
 
-### Multi-Agent
+Tripwire violations throw `GuardrailTripwireError` — catch at the call site.
 
-Handoffs (Swarm pattern), parallel execution, and team orchestration.
+### Multi-agent
 
 ```typescript
-import { ParallelRunner, Team, agentAsTool } from "@aizona/adk";
+import { ParallelRunner, Team, agentAsTool } from "@aizonaai/adk";
 
-// Route to specialists via handoffs
+// Handoff routing
 const router = defineAgent({
   name: "router",
-  instructions: "Route to specialists",
   handoffs: [
-    { agent: codeAgent, description: "For code questions" },
-    { agent: mathAgent, description: "For math questions" },
+    { agent: codeAgent, description: "Code questions" },
+    { agent: mathAgent, description: "Math questions" },
   ],
 });
 
-// Parallel execution
+// Parallel fan-out
 const parallel = new ParallelRunner();
 const results = await parallel.run([agent1, agent2], { input: "Analyze this" });
 
-// Agent as tool
+// Wrap an agent as a tool
 const researchTool = agentAsTool(researchAgent, "Research a topic deeply");
 ```
 
-### LLM Providers
-
-6 built-in providers with routing strategies.
+### Provider routing
 
 ```typescript
-import { createProvider, ADKRouter } from "@aizona/adk";
-
-const anthropic = createProvider({ providerId: "anthropic", apiKey: "sk-ant-..." });
-const openai = createProvider({ providerId: "openai", apiKey: "sk-..." });
+import { ADKRouter } from "@aizonaai/adk";
 
 const router = new ADKRouter({
   providers: [anthropic, openai],
@@ -198,27 +200,23 @@ const router = new ADKRouter({
 
 ### Skills
 
-Define and compose reusable agent behaviors.
-
 ```typescript
-import { defineSkill } from "@aizona/adk";
+import { defineSkill } from "@aizonaai/adk";
 
-const summarizeSkill = defineSkill({
+const summarize = defineSkill({
   name: "summarize",
   description: "Summarize a document",
   execute: async (input, ctx) => {
-    const result = await ctx.runner.run(summarizerAgent, { input: input.text });
-    return { summary: result.output };
+    const r = await ctx.runner.run(summarizerAgent, { input: input.text });
+    return { summary: r.output };
   },
 });
 ```
 
 ### Memory
 
-Vector-based semantic memory with auto-decay.
-
 ```typescript
-import { MemoryManager, EmbeddingService, PgVectorMemoryBackend } from "@aizona/adk";
+import { MemoryManager, EmbeddingService, PgVectorMemoryBackend } from "@aizonaai/adk";
 
 const memory = new MemoryManager({
   backend: new PgVectorMemoryBackend(dbClient),
@@ -226,58 +224,66 @@ const memory = new MemoryManager({
 });
 
 await memory.storeMemory({ content: "User prefers TypeScript", type: "fact" });
-const results = await memory.searchMemories("programming language preference");
+const hits = await memory.searchMemories("programming language preference");
 ```
 
-### Eval Harness
-
-Structured evaluation framework.
+### Event bus
 
 ```typescript
-import { EvalHarness } from "@aizona/adk";
-
-const harness = new EvalHarness({ runner, provider });
-const report = await harness.evaluate(agent, testCases);
-console.log(report.passRate, report.avgScore);
-```
-
-### Event Bus
-
-Typed event system for real-time observability (16 event types).
-
-```typescript
-import { ADKEventBus } from "@aizona/adk";
+import { ADKEventBus } from "@aizonaai/adk";
 
 const bus = new ADKEventBus();
-bus.on("run.started", (data) => console.log("Run started:", data.runId));
-bus.on("tool.invoked", (data) => console.log("Tool:", data.toolName));
+bus.on("run.started",     (e) => console.log("→", e.runId));
+bus.on("tool.invoked",    (e) => console.log("  tool:", e.toolName));
+bus.on("run.completed",   (e) => console.log("✓", e.usage.totalCostUsd, "USD"));
 ```
 
-### MCP Integration
-
-Connect to Model Context Protocol servers.
+### MCP integration
 
 ```typescript
-import { mcpServerTools } from "@aizona/adk";
+import { mcpServerTools } from "@aizonaai/adk";
 
-const tools = await mcpServerTools({ serverUrl: "http://localhost:3000" });
+const tools = await mcpServerTools({ transport: "http", url: "http://localhost:3000/mcp" });
 const agent = defineAgent({ name: "mcp-agent", tools });
 ```
 
+### Eval harness
+
+```typescript
+import { defineEvalSuite, runEval } from "@aizonaai/adk";
+
+const suite = defineEvalSuite({
+  name: "factuality",
+  cases: [{ input: "Capital of France?", expected: /Paris/i }],
+});
+
+const report = await runEval(suite, agent, { runner });
+console.log(report.passRate);
+```
+
+---
+
 ## Architecture
 
-- **Turn Loop** — messages → LLM call → tool execution → guardrails → handoff check → repeat
-- **Standalone** — Zero platform dependencies; works with any supported LLM provider
-- **Type-Safe** — Full TypeScript with Zod validation on all boundaries
-- **Composable** — Tools, guardrails, handoffs, and skills mix-and-match freely
-- **Observable** — Structured event bus, distributed tracing, and streaming out of the box
+- **Turn loop** — messages → LLM call → tool execution → guardrails → handoff check → repeat.
+- **Standalone** — zero platform coupling. Works against any supported provider.
+- **Type-safe** — full TypeScript with Zod validation on every boundary.
+- **Composable** — tools, guardrails, handoffs, and skills mix freely.
+- **Observable** — structured event bus, distributed tracing, streaming-first transport.
+
+---
 
 ## Documentation
 
-Full documentation and guides: [github.com/ai-zona/AIZona](https://github.com/ai-zona/AIZona)
+| Guide | What it covers |
+| ----- | -------------- |
+| [docs/deployment.md](https://github.com/ai-zona/adk/blob/main/docs/deployment.md) | Docker, Compose, Railway, Vercel, Kubernetes, sizing |
+| [docs/security.md](https://github.com/ai-zona/adk/blob/main/docs/security.md) | Keys, CORS, rate limiting, validation, secrets, guardrails |
+| [docs/troubleshooting.md](https://github.com/ai-zona/adk/blob/main/docs/troubleshooting.md) | Common errors, debug mode, perf, memory leaks |
+| [examples/](https://github.com/ai-zona/adk/tree/main/examples) | Six runnable examples covering the production surface |
 
-Bug reports and feature requests: [github.com/ai-zona/AIZona/issues](https://github.com/ai-zona/AIZona/issues)
+Issues and feature requests: [github.com/ai-zona/adk/issues](https://github.com/ai-zona/adk/issues).
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE).

@@ -1,0 +1,26 @@
+{
+  "name": "adk-example-06-production-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Production-shaped HTTP server: API-key auth, rate limit, usage tracking, SSE streaming",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aizonaai/adk": "^0.1.0",
+    "@aizonaai/adk-server": "^0.1.0",
+    "@hono/node-server": "^1.13.0",
+    "hono": "^4.7.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
