@@ -1,6 +1,6 @@
 {
   "name": "@aizonaai/adk-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AIZona ADK REST API Server \u2014 API key proxy, rate limiting, usage tracking, SSE/WS streaming",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -1,6 +1,6 @@
 {
   "name": "@aizonaai/aza-protocol",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AIZona AZA Protocol \u2014 agent-to-agent messaging, identity, task management, and team orchestration",
   "type": "module",
   "main": "./dist/index.cjs",

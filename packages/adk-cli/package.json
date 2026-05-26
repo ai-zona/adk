@@ -1,6 +1,6 @@
 {
   "name": "@aizonaai/adk-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AIZona ADK CLI \u2014 Scaffold, deploy, and manage AI agents",
   "type": "module",
   "main": "./dist/index.cjs",

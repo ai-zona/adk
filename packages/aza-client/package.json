@@ -1,6 +1,6 @@
 {
   "name": "@aizonaai/aza-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AIZona AZA Agent Client \u2014 connect external agents to the AIZona platform",
   "type": "module",
   "main": "./dist/index.cjs",
