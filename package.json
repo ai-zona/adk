@@ -1,7 +1,7 @@
 {
   "name": "@aizonaai/adk-monorepo",
   "private": true,
-  "description": "AIZona Agent Development Kit — Build governed AI agent teams",
+  "description": "AIZona Agent Development Kit \u2014 Build governed AI agent teams",
   "repository": "https://github.com/ai-zona/adk",
   "license": "MIT",
   "packageManager": "pnpm@10.29.2",

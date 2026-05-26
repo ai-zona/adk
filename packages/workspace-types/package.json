@@ -1,7 +1,7 @@
 {
   "name": "@aizonaai/contracts-workspace-architect",
   "version": "0.1.0",
-  "description": "AIZona Workspace Architect contracts — manifest types, WebSocket events, RPC procedures, IPC protocol",
+  "description": "AIZona Workspace Architect contracts \u2014 manifest types, WebSocket events, RPC procedures, IPC protocol",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -63,7 +63,11 @@
       "require": "./dist/ipc/protocol.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsup --format esm,cjs --dts --out-dir dist",
     "build:tsc": "tsc",
@@ -81,7 +85,15 @@
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
   },
-  "keywords": ["ai", "agents", "workspace", "contracts", "types", "aizona", "adk"],
+  "keywords": [
+    "ai",
+    "agents",
+    "workspace",
+    "contracts",
+    "types",
+    "aizona",
+    "adk"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18"

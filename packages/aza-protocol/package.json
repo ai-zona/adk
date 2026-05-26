@@ -1,7 +1,7 @@
 {
   "name": "@aizonaai/aza-protocol",
   "version": "0.1.0",
-  "description": "AIZona AZA Protocol — agent-to-agent messaging, identity, task management, and team orchestration",
+  "description": "AIZona AZA Protocol \u2014 agent-to-agent messaging, identity, task management, and team orchestration",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -13,7 +13,11 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
     "build:tsc": "tsc",
@@ -35,7 +39,16 @@
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
   },
-  "keywords": ["ai", "agents", "aza", "protocol", "aizona", "adk", "a2a", "identity"],
+  "keywords": [
+    "ai",
+    "agents",
+    "aza",
+    "protocol",
+    "aizona",
+    "adk",
+    "a2a",
+    "identity"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18"
