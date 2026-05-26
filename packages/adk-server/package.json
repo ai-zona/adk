@@ -25,18 +25,10 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/adk": "workspace:*",
+    "@aizona/adk": "^0.1.0",
     "@hono/node-server": "^1.13.0",
     "hono": "^4.7.4",
     "zod": "^3.24.1"
-  },
-  "peerDependencies": {
-    "@aizona/db": "workspace:*"
-  },
-  "peerDependenciesMeta": {
-    "@aizona/db": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -44,6 +36,21 @@
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
   },
-  "keywords": ["ai", "agents", "api", "server", "proxy"],
-  "license": "MIT"
+  "keywords": ["ai", "agents", "api", "server", "proxy", "aizona", "adk"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-zona/adk.git",
+    "directory": "packages/adk-server"
+  },
+  "homepage": "https://github.com/ai-zona/adk#readme",
+  "bugs": {
+    "url": "https://github.com/ai-zona/adk/issues"
+  }
 }

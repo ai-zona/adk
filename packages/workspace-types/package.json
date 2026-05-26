@@ -1,34 +1,101 @@
 {
   "name": "@aizona/contracts-workspace-architect",
-  "version": "0.2.1",
-  "private": true,
+  "version": "0.1.0",
+  "description": "AIZona Workspace Architect contracts — manifest types, WebSocket events, RPC procedures, IPC protocol",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./manifest": "./src/manifest/types.ts",
-    "./manifest/zod": "./src/manifest/zod.ts",
-    "./events": "./src/events/ws.ts",
-    "./events/zod": "./src/events/zod.ts",
-    "./events/hydrator": "./src/events/hydrator.ts",
-    "./rpc/workspace-architect": "./src/rpc/workspace-architect.ts",
-    "./rpc/workspace-channel": "./src/rpc/workspace-channel.ts",
-    "./rpc/workspace-entitlement": "./src/rpc/workspace-entitlement.ts",
-    "./capabilities": "./src/capabilities/identifiers.ts",
-    "./ipc": "./src/ipc/protocol.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./manifest": {
+      "types": "./dist/manifest/types.d.ts",
+      "import": "./dist/manifest/types.js",
+      "require": "./dist/manifest/types.cjs"
+    },
+    "./manifest/zod": {
+      "types": "./dist/manifest/zod.d.ts",
+      "import": "./dist/manifest/zod.js",
+      "require": "./dist/manifest/zod.cjs"
+    },
+    "./events": {
+      "types": "./dist/events/ws.d.ts",
+      "import": "./dist/events/ws.js",
+      "require": "./dist/events/ws.cjs"
+    },
+    "./events/zod": {
+      "types": "./dist/events/zod.d.ts",
+      "import": "./dist/events/zod.js",
+      "require": "./dist/events/zod.cjs"
+    },
+    "./events/hydrator": {
+      "types": "./dist/events/hydrator.d.ts",
+      "import": "./dist/events/hydrator.js",
+      "require": "./dist/events/hydrator.cjs"
+    },
+    "./rpc/workspace-architect": {
+      "types": "./dist/rpc/workspace-architect.d.ts",
+      "import": "./dist/rpc/workspace-architect.js",
+      "require": "./dist/rpc/workspace-architect.cjs"
+    },
+    "./rpc/workspace-channel": {
+      "types": "./dist/rpc/workspace-channel.d.ts",
+      "import": "./dist/rpc/workspace-channel.js",
+      "require": "./dist/rpc/workspace-channel.cjs"
+    },
+    "./rpc/workspace-entitlement": {
+      "types": "./dist/rpc/workspace-entitlement.d.ts",
+      "import": "./dist/rpc/workspace-entitlement.js",
+      "require": "./dist/rpc/workspace-entitlement.cjs"
+    },
+    "./capabilities": {
+      "types": "./dist/capabilities/identifiers.d.ts",
+      "import": "./dist/capabilities/identifiers.js",
+      "require": "./dist/capabilities/identifiers.cjs"
+    },
+    "./ipc": {
+      "types": "./dist/ipc/protocol.d.ts",
+      "import": "./dist/ipc/protocol.js",
+      "require": "./dist/ipc/protocol.cjs"
+    }
   },
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
+    "build": "tsup --format esm,cjs --dts --out-dir dist",
+    "build:tsc": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
+  },
+  "keywords": ["ai", "agents", "workspace", "contracts", "types", "aizona", "adk"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-zona/adk.git",
+    "directory": "packages/workspace-types"
+  },
+  "homepage": "https://github.com/ai-zona/adk#readme",
+  "bugs": {
+    "url": "https://github.com/ai-zona/adk/issues"
   }
 }

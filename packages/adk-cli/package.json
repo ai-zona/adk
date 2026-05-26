@@ -26,19 +26,34 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/adk": "workspace:*",
+    "@aizona/adk": "^0.1.0",
     "commander": "^13.1.0"
   },
   "optionalDependencies": {
-    "@aizona/adk-server": "workspace:*"
+    "@aizona/adk-server": "^0.1.0"
   },
   "devDependencies": {
-    "@aizona/adk-server": "workspace:*",
+    "@aizona/adk-server": "^0.1.0",
     "@types/node": "^20.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
   },
-  "keywords": ["ai", "agents", "cli", "scaffolding"],
-  "license": "MIT"
+  "keywords": ["ai", "agents", "cli", "scaffolding", "aizona", "adk"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-zona/adk.git",
+    "directory": "packages/adk-cli"
+  },
+  "homepage": "https://github.com/ai-zona/adk#readme",
+  "bugs": {
+    "url": "https://github.com/ai-zona/adk/issues"
+  }
 }
