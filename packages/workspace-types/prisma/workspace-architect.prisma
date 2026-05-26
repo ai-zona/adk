@@ -1,0 +1,253 @@
+// Workspace Architect schema additions — draft.
+//
+// Stream A copies this file to packages/db/prisma/schema/workspace-architect.prisma
+// and applies via `pnpm db:generate && pnpm db:push`.
+//
+// All tables live in the platform schema. CommunitySkill column extensions
+// (provenance, signedBy, executionMode, entitlementType) live in
+// communities.prisma — see Stream A task list.
+//
+// NOTHING in this file modifies an existing column / enum / relation.
+
+model WorkspaceManifest {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  version        Int      @default(1)
+  status         WorkspaceManifestStatus @default(DRAFT)
+  document       Json
+  authoredBy     String
+  authoredAt     DateTime @default(now())
+  parentId       String?
+  parent         WorkspaceManifest? @relation("Versioning", fields: [parentId], references: [id])
+  children       WorkspaceManifest[] @relation("Versioning")
+  recipeId       String?
+  jobs           WorkspaceProvisioningJob[]
+  @@index([workspaceId, status])
+  @@index([workspaceId, version])
+  @@schema("platform")
+}
+
+model WorkspaceProvisioningJob {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  manifestId     String
+  manifest       WorkspaceManifest @relation(fields: [manifestId], references: [id])
+  status         JobStatus @default(PENDING)
+  steps          Json
+  currentStepIdx Int       @default(0)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  failureReason  String?   @db.Text
+  triggeredBy    String
+  events         Json[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@index([workspaceId, status])
+  @@schema("platform")
+}
+
+model WorkspaceSecret {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  key            String
+  /// Encrypted as `[12-byte IV][ciphertext][16-byte GCM auth tag]`
+  /// using AES-256-GCM with a per-workspace key derived from
+  /// `KMS_MASTER_KEY` + workspaceId. All consumers MUST split on
+  /// the fixed offsets when decrypting; Stream F provides
+  /// `decryptWorkspaceSecret(workspaceId, encryptedValue)` helper.
+  encryptedValue Bytes
+  scope          SecretScope @default(WORKSPACE)
+  scopeRefId     String?
+  description    String?
+  createdBy      String
+  createdAt      DateTime @default(now())
+  rotatedAt      DateTime?
+  /// IMPORTANT: Postgres treats NULL `scopeRefId` values as distinct in
+  /// multi-column unique indexes. To prevent silent duplicate WORKSPACE-
+  /// scope secrets, application code in Stream B (sandbox `secrets.get`)
+  /// + Stream F (entitlement) + Stream G (secrets UI) MUST always write
+  /// the empty string `""` when `scope = WORKSPACE`, never NULL. Treat
+  /// `scopeRefId = ""` as "workspace-scoped, no team/agent ref".
+  @@unique([workspaceId, key, scope, scopeRefId])
+  @@index([workspaceId])
+  @@schema("platform")
+}
+
+model WorkspaceEntitlement {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  type           EntitlementType
+  refId          String
+  source         EntitlementSource
+  unlockedAt     DateTime @default(now())
+  expiresAt      DateTime?
+  unlockedBy     String?
+  txHash         String?
+  metadata       Json?
+  @@unique([workspaceId, type, refId])
+  @@index([workspaceId, type])
+  @@schema("platform")
+}
+
+model MeteredUsage {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  userId         String?
+  agentId        String?
+  capability     String
+  refId          String
+  costUnits      Decimal  @db.Decimal(20, 8)
+  costAiz        Decimal  @db.Decimal(20, 8)
+  callMetadata   Json?
+  settledAt      DateTime?
+  txHash         String?
+  /// Incremented on each settlement attempt; 3+ failures file a
+  /// `ops.metered.settlement.failed` CEODecision row per spec §7.3.
+  settlementAttempts Int @default(0)
+  createdAt      DateTime @default(now())
+  @@index([workspaceId, capability, createdAt])
+  @@index([settledAt])
+  @@schema("platform")
+}
+
+model WorkspaceSandbox {
+  id             String   @id @default(cuid())
+  workspaceId    String   @unique
+  isolateId      String
+  memoryLimitMb  Int      @default(128)
+  cpuLimitMs     Int      @default(5000)
+  hostFnAllowlist String[]
+  status         SandboxStatus @default(IDLE)
+  createdAt      DateTime @default(now())
+  lastUsedAt     DateTime @default(now())
+  @@schema("platform")
+}
+
+model WorkspaceChannel {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  name           String
+  kind           ChannelKind @default(GENERAL)
+  recipeId       String?
+  agentParticipants String[]
+  createdAt      DateTime @default(now())
+  archivedAt     DateTime?
+  messages       WorkspaceMessage[]
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@schema("platform")
+}
+
+model WorkspaceMessage {
+  id             String   @id @default(cuid())
+  channelId      String
+  channel        WorkspaceChannel @relation(fields: [channelId], references: [id])
+  authorType     MessageAuthorType
+  authorId       String
+  content        Json
+  inReplyToId    String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  editedAt       DateTime?
+  @@index([channelId, createdAt])
+  @@schema("platform")
+}
+
+model WorkspaceRecipe {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  description    String   @db.Text
+  category       String
+  manifestTemplate Json
+  tierMin        WorkspaceTier @default(FREE)
+  aizUnlockCost  Int      @default(0)
+  publisher      String
+  verified       Boolean  @default(false)
+  installs       Int      @default(0)
+  rating         Decimal? @db.Decimal(3, 2)
+  reviewCount    Int      @default(0)
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@index([category])
+  @@index([tierMin])
+  @@schema("platform")
+}
+
+model DataApiConnector {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  vendor         String
+  description    String   @db.Text
+  authScheme     String
+  authConfig     Json
+  costPerCallUsd Decimal  @db.Decimal(10, 6)
+  costPerCallAiz Decimal  @db.Decimal(10, 6)
+  rateLimit      Json
+  tierIncluded   WorkspaceTier?
+  aizUnlockCost  Int      @default(0)
+  category       String
+  metadata       Json?
+  active         Boolean  @default(true)
+  @@schema("platform")
+}
+
+enum WorkspaceManifestStatus {
+  DRAFT
+  COMMITTED
+  SUPERSEDED
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  ROLLED_BACK
+}
+
+enum SecretScope {
+  WORKSPACE
+  TEAM
+  AGENT
+}
+
+enum EntitlementType {
+  BUNDLE
+  SKILL
+  TOOL
+  DATA_API
+  RECIPE
+}
+
+enum EntitlementSource {
+  TIER_INCLUDED
+  AIZ_UNLOCKED
+  USD_SUBSCRIPTION
+  METERED
+  TRIAL
+}
+
+enum SandboxStatus {
+  IDLE
+  ACTIVE
+  DRAINING
+  DESTROYED
+}
+
+enum ChannelKind {
+  GENERAL
+  RECIPE
+  DM
+  SYSTEM
+}
+
+enum MessageAuthorType {
+  USER
+  AGENT
+  SYSTEM
+}
+
+// SkillProvenance + SkillExecMode go in communities.prisma alongside CommunitySkill.
+// WorkspaceTier exists already on workspace.prisma; reused here.

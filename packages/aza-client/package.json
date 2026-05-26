@@ -1,0 +1,21 @@
+{
+  "name": "@aizona/aza-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aizona/aza-protocol": "workspace:*",
+    "@aizona/types": "workspace:*",
+    "ioredis": "^5.9.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

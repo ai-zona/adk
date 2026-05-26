@@ -1,0 +1,54 @@
+{
+  "name": "@aizona/adk",
+  "version": "0.1.0",
+  "description": "AIZona Agent Development Kit — Build, deploy, and orchestrate AI agents",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "bin": {
+    "adk": "./dist/bin/adk-cli.js"
+  },
+  "files": ["dist", "examples", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup",
+    "build:tsc": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.18"
+  },
+  "keywords": ["ai", "agents", "adk", "aizona", "agent-development-kit"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-zona/AIZona.git",
+    "directory": "packages/adk"
+  },
+  "homepage": "https://github.com/ai-zona/AIZona#readme",
+  "bugs": {
+    "url": "https://github.com/ai-zona/AIZona/issues"
+  }
+}

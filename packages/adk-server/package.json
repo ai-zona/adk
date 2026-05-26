@@ -1,0 +1,49 @@
+{
+  "name": "@aizona/adk-server",
+  "version": "0.1.0",
+  "description": "AIZona ADK REST API Server — API key proxy, rate limiting, usage tracking, SSE/WS streaming",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup",
+    "build:tsc": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "node dist/index.js",
+    "dev:standalone": "tsx watch src/start.ts",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@aizona/adk": "workspace:*",
+    "@hono/node-server": "^1.13.0",
+    "hono": "^4.7.4",
+    "zod": "^3.24.1"
+  },
+  "peerDependencies": {
+    "@aizona/db": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@aizona/db": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.18"
+  },
+  "keywords": ["ai", "agents", "api", "server", "proxy"],
+  "license": "MIT"
+}

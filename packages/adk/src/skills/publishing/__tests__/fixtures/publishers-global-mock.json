@@ -1,0 +1,74 @@
+{
+  "publishers": [
+    {
+      "id": "pub-001",
+      "name": "Sandstone Literary",
+      "imprint": "Sandstone",
+      "genres": ["literary-fiction", "coming-of-age"],
+      "wordCountMin": 60000,
+      "wordCountMax": 120000,
+      "acquiringEditors": [
+        {
+          "name": "Marisol Kane",
+          "recentAcquisitions": ["The Hollow Choir", "What the Cactus Knew"]
+        }
+      ],
+      "submissionGuidelines": "Query + first 25 pages via Submittable. No simultaneous."
+    },
+    {
+      "id": "pub-002",
+      "name": "North Star House",
+      "imprint": "Aurora",
+      "genres": ["literary-fiction", "speculative"],
+      "wordCountMin": 70000,
+      "wordCountMax": 110000,
+      "acquiringEditors": [
+        {
+          "name": "Theo Park",
+          "recentAcquisitions": ["The Tessellated Year"]
+        }
+      ],
+      "submissionGuidelines": "Query + synopsis + first 50 pages via email."
+    },
+    {
+      "id": "pub-003",
+      "name": "Riverdust Press",
+      "imprint": "Riverdust",
+      "genres": ["sci-fi", "speculative"],
+      "wordCountMin": 80000,
+      "wordCountMax": 130000,
+      "acquiringEditors": [
+        {
+          "name": "Aki Sato",
+          "recentAcquisitions": []
+        }
+      ],
+      "submissionGuidelines": "Closed except via referral."
+    },
+    {
+      "id": "pub-004",
+      "name": "Greenline Books",
+      "imprint": "Greenline",
+      "genres": ["upmarket-fiction", "book-club"],
+      "wordCountMin": 75000,
+      "wordCountMax": 110000,
+      "acquiringEditors": [
+        {
+          "name": "Devi Rao",
+          "recentAcquisitions": ["The Long Soft Wind"]
+        }
+      ],
+      "submissionGuidelines": "Query letter only; full request on interest."
+    },
+    {
+      "id": "pub-005",
+      "name": "Old Mesa Editions",
+      "imprint": "Old Mesa",
+      "genres": ["literary-fiction"],
+      "wordCountMin": 50000,
+      "wordCountMax": 90000,
+      "acquiringEditors": [],
+      "submissionGuidelines": "Open reading period: April + October."
+    }
+  ]
+}

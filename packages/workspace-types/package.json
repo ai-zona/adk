@@ -1,0 +1,34 @@
+{
+  "name": "@aizona/contracts-workspace-architect",
+  "version": "0.2.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest": "./src/manifest/types.ts",
+    "./manifest/zod": "./src/manifest/zod.ts",
+    "./events": "./src/events/ws.ts",
+    "./events/zod": "./src/events/zod.ts",
+    "./events/hydrator": "./src/events/hydrator.ts",
+    "./rpc/workspace-architect": "./src/rpc/workspace-architect.ts",
+    "./rpc/workspace-channel": "./src/rpc/workspace-channel.ts",
+    "./rpc/workspace-entitlement": "./src/rpc/workspace-entitlement.ts",
+    "./capabilities": "./src/capabilities/identifiers.ts",
+    "./ipc": "./src/ipc/protocol.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.18"
+  }
+}
