@@ -27,7 +27,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
         

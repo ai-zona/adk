@@ -37,7 +37,6 @@
     "@aizona/adk-server": "^0.1.0"
   },
   "devDependencies": {
-    "@aizona/adk-server": "workspace:*",
     "@types/node": "^20.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.7.3",
@@ -66,5 +65,13 @@
   "homepage": "https://github.com/ai-zona/adk#readme",
   "bugs": {
     "url": "https://github.com/ai-zona/adk/issues"
+  },
+  "peerDependencies": {
+    "@aizona/adk-server": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@aizona/adk-server": {
+      "optional": true
+    }
   }
 }
