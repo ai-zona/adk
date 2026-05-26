@@ -16,7 +16,8 @@ export type MCPToolRecord = Awaited<ReturnType<typeof db.mCPTool.findUniqueOrThr
 /**
  * Prisma where-input type for MCPServer, inferred from the db client.
  */
-type MCPServerWhereInput = NonNullable<Parameters<typeof db.mCPServer.findMany>[0]>["where"];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MCPServerWhereInput = any;
 
 /**
  * Checks if a URL points to an internal/private network address.
@@ -212,7 +213,7 @@ export class ServerRegistry {
       select: { id: true, name: true },
     });
 
-    const existingByName = new Map(existingTools.map((t) => [t.name, t.id]));
+    const existingByName = new Map(existingTools.map((t: any) => [t.name, t.id]));
     const discoveredNames = new Set(tools.map((t) => t.name));
 
     // Upsert each discovered tool
@@ -250,8 +251,8 @@ export class ServerRegistry {
 
     // Mark tools not found in discovery as deprecated
     const deprecatePromises = existingTools
-      .filter((t) => !discoveredNames.has(t.name))
-      .map((t) =>
+      .filter((t: any) => !discoveredNames.has(t.name))
+      .map((t: any) =>
         db.mCPTool.update({
           where: { id: t.id },
           data: { deprecated: true },

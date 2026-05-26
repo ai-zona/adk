@@ -82,7 +82,7 @@ const app = createServer({
   defaultProvider: createProvider({
     providerId: "anthropic",
     apiKey,
-  }),
+  }) ?? undefined,
   validateApiKey,
   rateLimitRpm: Number(process.env.ADK_RATE_LIMIT_RPM ?? 60),
   corsOrigins: (process.env.ADK_CORS_ORIGINS ?? "http://localhost:3000")

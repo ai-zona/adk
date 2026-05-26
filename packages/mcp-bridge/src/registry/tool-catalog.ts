@@ -17,7 +17,8 @@ export type ToolRecord = Awaited<ReturnType<typeof db.mCPTool.findUniqueOrThrow>
 /**
  * Prisma where-input type for MCPTool, inferred from the db client.
  */
-type MCPToolWhereInput = NonNullable<Parameters<typeof db.mCPTool.findMany>[0]>["where"];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MCPToolWhereInput = any;
 
 /**
  * ToolCatalog provides read-only search and discovery operations
@@ -218,7 +219,7 @@ export class ToolCatalog {
       return [];
     }
 
-    const toolIds = grants.map((g) => g.toolId);
+    const toolIds = grants.map((g: any) => g.toolId);
 
     const tools = await db.mCPTool.findMany({
       where: {

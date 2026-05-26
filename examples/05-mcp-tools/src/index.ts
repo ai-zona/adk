@@ -45,8 +45,8 @@ if (!mcpUrl && !mcpCmd) {
 // Discover tools — the connector handles handshake, tool listing, and schema translation.
 const tools = await mcpServerTools(
   mcpUrl
-    ? { transport: "http", url: mcpUrl }
-    : { transport: "stdio", command: mcpCmd!.split(" ")[0], args: mcpCmd!.split(" ").slice(1) },
+    ? { serverUrl: mcpUrl, transport: 'streamable-http' as const }
+    : { serverUrl: mcpCmd!, transport: 'stdio' as const },
 );
 
 console.log(`\nDiscovered ${tools.length} MCP tool(s):`);
@@ -64,7 +64,7 @@ const agent = defineAgent({
 });
 
 const runner = new Runner({
-  provider: new AnthropicProvider({ apiKey }),
+  provider: new AnthropicProvider({ providerId: 'anthropic', apiKey }),
 });
 
 const input =
@@ -76,5 +76,5 @@ const result = await runner.run(agent, { input });
 console.log("\n──────────── FINAL ────────────");
 console.log(result.output);
 console.log(
-  `\n[turns=${result.turns} cost=$${result.usage.totalCostUsd.toFixed(6)}]`,
+  `\n[turns=${result.totalTurns} cost=$${result.usage.totalCostUsd.toFixed(6)}]`,
 );

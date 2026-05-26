@@ -124,7 +124,7 @@ const input =
   "Hey, my last invoice looks wrong — I was charged $149 but I'm on the Hobby plan.";
 
 const runner = new Runner({
-  provider: new AnthropicProvider({ apiKey }),
+  provider: new AnthropicProvider({ providerId: 'anthropic', apiKey }),
 });
 
 const result = await runner.run(router, { input, maxTurns: 10 });
@@ -132,5 +132,5 @@ const result = await runner.run(router, { input, maxTurns: 10 });
 console.log("\n──────────── FINAL ────────────");
 console.log(result.output);
 console.log(
-  `\n[turns=${result.turns} cost=$${result.usage.totalCostUsd.toFixed(6)}]`,
+  `\n[turns=${result.totalTurns} cost=$${result.usage.totalCostUsd.toFixed(6)}]`,
 );

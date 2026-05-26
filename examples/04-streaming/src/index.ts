@@ -17,6 +17,8 @@ import {
   defineTool,
 } from "@aizonaai/adk";
 
+import type { ToolDef } from "@aizonaai/adk";
+
 const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) {
   console.error("Missing ANTHROPIC_API_KEY environment variable.");
@@ -35,11 +37,11 @@ const agent = defineAgent({
   model: "claude-haiku-4-5-20251001",
   instructions:
     "You are a concise, expressive writer. When asked for the time, call time_now first.",
-  tools: [timeNow],
+  tools: [timeNow as ToolDef],
 });
 
 const runner = new Runner({
-  provider: new AnthropicProvider({ apiKey }),
+  provider: new AnthropicProvider({ providerId: 'anthropic', apiKey }),
 });
 
 const input =
@@ -54,16 +56,16 @@ try {
   process.stdout.write("\x1b[2m"); // dim while streaming meta
   for await (const event of runner.stream(agent, { input, signal: controller.signal })) {
     switch (event.type) {
-      case "turn_started":
-        process.stdout.write(`\x1b[0m\n[turn ${event.turnIndex + 1}]\n\x1b[1m`);
+      case "turn_complete":
+        process.stdout.write(`\x1b[0m\n[turn ${event.turnNumber}]\n\x1b[1m`);
         break;
       case "text_delta":
         process.stdout.write(event.content);
         break;
-      case "tool_invoked":
+      case "tool_call_start":
         process.stdout.write(`\x1b[0m\n\x1b[36m→ tool ${event.toolName}(${JSON.stringify(event.input)})\x1b[0m\n`);
         break;
-      case "tool_result":
+      case "tool_call_end":
         process.stdout.write(`\x1b[36m← ${JSON.stringify(event.output)}\x1b[0m\n\x1b[1m`);
         break;
       case "handoff":
@@ -71,7 +73,7 @@ try {
         break;
       case "run_complete":
         process.stdout.write(
-          `\x1b[0m\n\n[turns=${event.result.turns} cost=$${event.result.usage.totalCostUsd.toFixed(6)} tokens=${
+          `\x1b[0m\n\n[turns=${event.result.totalTurns} cost=$${event.result.usage.totalCostUsd.toFixed(6)} tokens=${
             event.result.usage.inputTokens + event.result.usage.outputTokens
           }]\n`,
         );

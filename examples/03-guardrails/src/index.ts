@@ -30,6 +30,8 @@ import {
   tokenLimit,
 } from "@aizonaai/adk";
 
+import type { ToolDef } from "@aizonaai/adk";
+
 const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) {
   console.error("Missing ANTHROPIC_API_KEY environment variable.");
@@ -55,25 +57,27 @@ const agent = defineAgent({
     "You read the user's most recent support email and produce a one-paragraph summary.",
     "Always call fetch_email first. Never invent details.",
   ].join(" "),
-  tools: [fetchEmail],
+  tools: [fetchEmail as ToolDef],
   guardrails: [
-    contentFilter({
-      blockedTerms: [
-        "ignore previous",
-        "system prompt",
-        "developer mode",
-      ],
-    }),
-    piiFilter({ redact: true }),
-    budgetLimit({ maxCostUsd: 0.05 }),
-    tokenLimit({ maxTotalTokens: 8_000 }),
-    consentGate({ level: "notify" }),
+    {
+      guardrail: contentFilter({
+        blockedKeywords: [
+          "ignore previous",
+          "system prompt",
+          "developer mode",
+        ],
+      }),
+    },
+    { guardrail: piiFilter({ detect: ["email", "phone", "credit_card"] }) },
+    { guardrail: budgetLimit(0.05) },
+    { guardrail: tokenLimit({ maxTotalTokens: 8_000 }) },
+    { guardrail: consentGate("notify") },
   ],
   maxTurns: 6,
 });
 
 const runner = new Runner({
-  provider: new AnthropicProvider({ apiKey }),
+  provider: new AnthropicProvider({ providerId: 'anthropic', apiKey }),
 });
 
 const input =
@@ -85,13 +89,13 @@ try {
   console.log("\n──────────── OUTPUT (post-redaction) ────────────");
   console.log(result.output);
   console.log(
-    `\n[turns=${result.turns} cost=$${result.usage.totalCostUsd.toFixed(6)}]`,
+    `\n[turns=${result.totalTurns} cost=$${result.usage.totalCostUsd.toFixed(6)}]`,
   );
 } catch (err) {
   if (err instanceof GuardrailTripwireError) {
     console.error("\n⚠ guardrail tripwire:", err.message);
     console.error("  guardrail:", err.guardrailName);
-    console.error("  stage:    ", err.stage);
+    console.error("  result:   ", err.result.type);
     process.exit(2);
   }
   throw err;

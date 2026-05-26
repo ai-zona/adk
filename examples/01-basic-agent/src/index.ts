@@ -27,7 +27,7 @@ const tutor = defineAgent({
 });
 
 const runner = new Runner({
-  provider: new AnthropicProvider({ apiKey }),
+  provider: new AnthropicProvider({ providerId: 'anthropic', apiKey }),
 });
 
 const input = process.argv.slice(2).join(" ") || "What is a closure?";
@@ -36,7 +36,7 @@ const result = await runner.run(tutor, { input });
 
 console.log(result.output);
 console.log(
-  `\n[turns=${result.turns} cost=$${result.usage.totalCostUsd.toFixed(6)} tokens=${
+  `\n[turns=${result.totalTurns} cost=$${result.usage.totalCostUsd.toFixed(6)} tokens=${
     result.usage.inputTokens + result.usage.outputTokens
   }]`,
 );

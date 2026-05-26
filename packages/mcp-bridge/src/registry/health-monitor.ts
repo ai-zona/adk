@@ -282,7 +282,7 @@ export class HealthMonitor {
       select: { id: true },
     });
 
-    const results = await Promise.allSettled(servers.map((server) => this.checkServer(server.id)));
+    const results = await Promise.allSettled(servers.map((server: any) => this.checkServer(server.id)));
 
     return results
       .filter((r): r is PromiseFulfilledResult<HealthCheckResult> => r.status === "fulfilled")

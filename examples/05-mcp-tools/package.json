@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aizonaai/adk": "^0.1.0"
+    "@aizonaai/adk": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

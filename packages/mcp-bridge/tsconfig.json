@@ -2,7 +2,13 @@
   "extends": "../config/tsconfig/library.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "paths": {
+      "@aizona/db": ["./src/types/aizona-db.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

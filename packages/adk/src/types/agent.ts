@@ -28,7 +28,8 @@ export interface ModelConfig {
 
 /** Handoff target definition */
 export interface HandoffTarget {
-  agent: string | AgentConfig;
+  /** Target agent: name string, inline AgentConfig, or Agent instance */
+  agent: string | AgentConfig | { name: string; config: Readonly<AgentConfig> };
   description: string;
   filter?: (ctx: RunContext) => boolean | Promise<boolean>;
 }
@@ -48,7 +49,8 @@ export interface AgentConfig {
   model?: string | ModelConfig;
 
   /** Tools available to this agent */
-  tools?: ToolDef[];
+  // biome-ignore lint/suspicious/noExplicitAny: accept typed ToolDef variants from defineTool()
+  tools?: ToolDef<any, any>[];
 
   /** Agents this agent can hand off to */
   handoffs?: HandoffTarget[];
