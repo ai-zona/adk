@@ -184,11 +184,11 @@ const agent = defineAgent({
   name: "support-bot",
   instructions: "Help users with billing questions.",
   guardrails: [
-    contentFilter({ blockedTerms: ["ignore previous", "system prompt"] }),
-    piiFilter({ redact: true }),         // strip SSNs, emails, card numbers from outputs
-    budgetLimit({ maxCostUsd: 0.50 }),    // per-run cap
-    tokenLimit({ maxTotalTokens: 32_000 }),
-    consentGate({ level: "notify" }),     // surface every tool call to the user
+    { guardrail: contentFilter({ blockedKeywords: ["ignore previous", "system prompt"] }) },
+    { guardrail: piiFilter({ detect: ["email", "phone", "credit_card", "ssn"] }) },
+    { guardrail: budgetLimit(0.50) },          // per-run USD cap
+    { guardrail: tokenLimit({ maxTotalTokens: 32_000 }) },
+    { guardrail: consentGate("notify") },      // surface every tool call to the user
   ],
 });
 ```

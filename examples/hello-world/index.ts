@@ -17,8 +17,14 @@ const agent = defineAgent({
   model: "claude-haiku-4-5-20251001",
 });
 
+const apiKey = process.env.ANTHROPIC_API_KEY;
+if (!apiKey) {
+  console.error("Missing ANTHROPIC_API_KEY environment variable.");
+  process.exit(1);
+}
+
 const runner = new Runner({
-  provider: new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY! }),
+  provider: new AnthropicProvider({ providerId: "anthropic", apiKey }),
 });
 
 const result = await runner.run(agent, {
@@ -27,5 +33,7 @@ const result = await runner.run(agent, {
 
 console.log(result.output);
 console.log(
-  `\n[${result.usage.totalCostUsd.toFixed(6)} USD | ${result.usage.inputTokens + result.usage.outputTokens} tokens]`,
+  `\n[${result.usage.totalCostUsd.toFixed(6)} USD | ${
+    result.usage.inputTokens + result.usage.outputTokens
+  } tokens | turns=${result.totalTurns}]`,
 );

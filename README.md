@@ -4,11 +4,13 @@
 
 **Build governed AI agent teams with TypeScript.**
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/ai-zona/adk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ai-zona/adk/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@aizonaai/adk)](https://www.npmjs.com/package/@aizonaai/adk)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
+[![Node](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)](#getting-started)
 
-[Getting Started](#getting-started) • [Documentation](https://docs.aizona.ai) • [Examples](./examples) • [AIZona Cloud](https://aizona.ai)
+[Quickstart](./docs/quickstart.md) • [Documentation](./docs/) • [Examples](./examples) • [CLI Reference](./docs/cli-reference.md) • [Contributing](./CONTRIBUTING.md)
 
 </div>
 
