@@ -1,7 +1,7 @@
 {
   "name": "@aizona/aza-client",
   "version": "0.1.0",
-  "description": "AIZona AZA Agent Client — connect external agents to the AIZona platform",
+  "description": "AIZona AZA Agent Client \u2014 connect external agents to the AIZona platform",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -13,7 +13,11 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
     "build:tsc": "tsc",
@@ -21,7 +25,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/aza-protocol": "^0.1.0",
+    "@aizona/aza-protocol": "workspace:*",
     "ioredis": "^5.9.2"
   },
   "devDependencies": {
@@ -29,7 +33,14 @@
     "tsup": "^8.5.1",
     "typescript": "^5.7.3"
   },
-  "keywords": ["ai", "agents", "aza", "aizona", "adk", "protocol"],
+  "keywords": [
+    "ai",
+    "agents",
+    "aza",
+    "aizona",
+    "adk",
+    "protocol"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18"

@@ -1,7 +1,7 @@
 {
   "name": "@aizona/adk-server",
   "version": "0.1.0",
-  "description": "AIZona ADK REST API Server — API key proxy, rate limiting, usage tracking, SSE/WS streaming",
+  "description": "AIZona ADK REST API Server \u2014 API key proxy, rate limiting, usage tracking, SSE/WS streaming",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -13,7 +13,11 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsup",
     "build:tsc": "tsc",
@@ -25,7 +29,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/adk": "^0.1.0",
+    "@aizona/adk": "workspace:*",
     "@hono/node-server": "^1.13.0",
     "hono": "^4.7.4",
     "zod": "^3.24.1"
@@ -36,7 +40,15 @@
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
   },
-  "keywords": ["ai", "agents", "api", "server", "proxy", "aizona", "adk"],
+  "keywords": [
+    "ai",
+    "agents",
+    "api",
+    "server",
+    "proxy",
+    "aizona",
+    "adk"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18"

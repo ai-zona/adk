@@ -1,7 +1,7 @@
 {
   "name": "@aizona/adk-cli",
   "version": "0.1.0",
-  "description": "AIZona ADK CLI — Scaffold, deploy, and manage AI agents",
+  "description": "AIZona ADK CLI \u2014 Scaffold, deploy, and manage AI agents",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -16,7 +16,11 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsup",
     "build:tsc": "tsc",
@@ -26,20 +30,27 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/adk": "^0.1.0",
+    "@aizona/adk": "workspace:*",
     "commander": "^13.1.0"
   },
   "optionalDependencies": {
     "@aizona/adk-server": "^0.1.0"
   },
   "devDependencies": {
-    "@aizona/adk-server": "^0.1.0",
+    "@aizona/adk-server": "workspace:*",
     "@types/node": "^20.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
   },
-  "keywords": ["ai", "agents", "cli", "scaffolding", "aizona", "adk"],
+  "keywords": [
+    "ai",
+    "agents",
+    "cli",
+    "scaffolding",
+    "aizona",
+    "adk"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18"
