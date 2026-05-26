@@ -9,7 +9,17 @@ All notable changes to this project are documented here. The format follows [Kee
 - Production deployment guide (`docs/deployment.md`) — Docker multi-stage build, Compose, Railway, Vercel, Kubernetes, sizing & scaling.
 - Security guide (`docs/security.md`) — API key management, CORS, rate limiting, input validation, secrets, TLS, guardrails, tool sandboxing.
 - Troubleshooting runbook (`docs/troubleshooting.md`) — common errors, debug mode, log format, performance tuning, memory leak prevention.
+- **Quickstart guide** (`docs/quickstart.md`) — five-minute zero-to-streaming walkthrough.
+- **CLI reference** (`docs/cli-reference.md`) — every `aizona` command, flag, env var, and exit code.
 - Six runnable examples under `examples/` covering the production surface: basic agent, multi-agent handoffs, guardrails, streaming, MCP tools, production server.
+- Three legacy examples (`hello-world`, `email-assistant`, `web-scraper`) promoted to first-class workspace packages with their own `package.json` + `tsconfig.json` so `pnpm typecheck` covers them.
+- Pull-request template at `.github/PULL_REQUEST_TEMPLATE.md`.
+- Integration test suite (`packages/adk/src/__tests__/integration/`) covering end-to-end agent runs against a mock provider — tool execution, guardrail tripwires, streaming events, and structured output validation.
+
+### Fixed
+
+- Stale guardrail snippet in `docs/security.md` (`blockedTerms` → `blockedKeywords`, `piiFilter({ redact: true })` → `piiFilter({ detect: […] })`, `budgetLimit({ maxCostUsd })` → `budgetLimit(n)`, `consentGate({ level })` → `consentGate(level)`, guardrails now wrapped in `{ guardrail: ... }`).
+- Legacy examples (`hello-world`, `email-assistant`, `web-scraper`) updated to current provider API (`new AnthropicProvider({ providerId: "anthropic", apiKey })`).
 
 ## [0.1.0] — 2026-05-26
 

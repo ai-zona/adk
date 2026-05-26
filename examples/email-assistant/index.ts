@@ -58,8 +58,14 @@ Write clear, concise emails. Avoid filler phrases like "I hope this email finds 
   tools: [draftEmailTool],
 });
 
+const apiKey = process.env.ANTHROPIC_API_KEY;
+if (!apiKey) {
+  console.error("Missing ANTHROPIC_API_KEY environment variable.");
+  process.exit(1);
+}
+
 const runner = new Runner({
-  provider: new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY! }),
+  provider: new AnthropicProvider({ providerId: "anthropic", apiKey }),
 });
 
 const result = await runner.run(agent, {

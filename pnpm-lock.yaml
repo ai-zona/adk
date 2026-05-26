@@ -129,6 +129,60 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  examples/email-assistant:
+    dependencies:
+      '@aizonaai/adk':
+        specifier: workspace:*
+        version: link:../../packages/adk
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.41
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.3
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  examples/hello-world:
+    dependencies:
+      '@aizonaai/adk':
+        specifier: workspace:*
+        version: link:../../packages/adk
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.41
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.3
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  examples/web-scraper:
+    dependencies:
+      '@aizonaai/adk':
+        specifier: workspace:*
+        version: link:../../packages/adk
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.41
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.3
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/adk:
     dependencies:
       zod:
