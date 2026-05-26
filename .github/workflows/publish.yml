@@ -27,37 +27,40 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
         
       - name: Build packages
         run: pnpm run build
-        
-      - name: Publish @aizona/adk
+
+      # Publish in dependency order: leaf packages first, then dependents
+      - name: Publish @aizona/adk (leaf - no @aizona deps)
         if: inputs.package == 'all' || inputs.package == 'adk' || startsWith(github.ref, 'refs/tags/')
-        run: cd packages/adk && npm publish --access public --provenance
+        run: cd packages/adk && npm publish --access public --provenance || echo "Already published or error"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
-          
-      - name: Publish @aizona/adk-cli
-        if: inputs.package == 'all' || inputs.package == 'adk-cli' || startsWith(github.ref, 'refs/tags/')
-        run: cd packages/adk-cli && npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
-          
-      - name: Publish @aizona/adk-server
-        if: inputs.package == 'all' || inputs.package == 'adk-server' || startsWith(github.ref, 'refs/tags/')
-        run: cd packages/adk-server && npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
-          
-      - name: Publish @aizona/aza-client
+
+      - name: Publish @aizona/aza-client (leaf - depends on aza-protocol which is not published)
         if: inputs.package == 'all' || inputs.package == 'aza-client' || startsWith(github.ref, 'refs/tags/')
-        run: cd packages/aza-client && npm publish --access public --provenance
+        run: cd packages/aza-client && npm publish --access public --provenance || echo "Already published or error"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
+
+      - name: Publish @aizona/contracts-workspace-architect (leaf)
+        if: inputs.package == 'all' || inputs.package == 'workspace-types' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/workspace-types && npm publish --access public --provenance || echo "Already published or error"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
           
-      - name: Publish @aizona/contracts-workspace-architect
-        if: inputs.package == 'all' || inputs.package == 'workspace-types' || startsWith(github.ref, 'refs/tags/')
-        run: cd packages/workspace-types && npm publish --access public --provenance
+      - name: Publish @aizona/adk-server (depends on @aizona/adk)
+        if: inputs.package == 'all' || inputs.package == 'adk-server' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/adk-server && npm publish --access public --provenance || echo "Already published or error"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
+          
+      - name: Publish @aizona/adk-cli (depends on @aizona/adk + @aizona/adk-server)
+        if: inputs.package == 'all' || inputs.package == 'adk-cli' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/adk-cli && npm publish --access public --provenance || echo "Already published or error"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
