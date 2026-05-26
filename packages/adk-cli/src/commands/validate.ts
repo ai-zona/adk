@@ -2,14 +2,33 @@
 // aizona validate [path]
 // ──────────────────────────────────────────────────────
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { Command } from "commander";
 
 interface ValidationResult {
   check: string;
   passed: boolean;
+  /** True for soft failures (warnings) — used to colour the icon. */
+  warning?: boolean;
   message: string;
+}
+
+function findAgentSourceFiles(dir: string): string[] {
+  const agentsDir = resolve(dir, "agents");
+  if (!existsSync(agentsDir)) return [];
+  try {
+    if (!statSync(agentsDir).isDirectory()) return [];
+  } catch {
+    return [];
+  }
+  try {
+    return readdirSync(agentsDir)
+      .filter((f) => f.endsWith(".ts") || f.endsWith(".js"))
+      .map((f) => resolve(agentsDir, f));
+  } catch {
+    return [];
+  }
 }
 
 export function createValidateCommand(): Command {
@@ -21,7 +40,10 @@ export function createValidateCommand(): Command {
       const results: ValidationResult[] = [];
       const configPath = resolve(path);
 
-      // Check 1: Config file exists
+      // Check 1: Config file or agent source exists.
+      // Accept either a top-level config file (agent.json, agent.ts, aizona.config.ts)
+      // OR one or more agent source files in the `agents/` folder — that matches the
+      // layout produced by `aizona init` so a freshly scaffolded project validates.
       const possibleFiles = ["agent.json", "agent.yaml", "agent.ts", "aizona.config.ts"];
       let configFile: string | null = null;
       for (const file of possibleFiles) {
@@ -32,17 +54,25 @@ export function createValidateCommand(): Command {
         }
       }
 
-      if (!configFile) {
-        results.push({
-          check: "config-file",
-          passed: false,
-          message: `No agent config found in ${configPath}. Expected one of: ${possibleFiles.join(", ")}`,
-        });
-      } else {
+      const agentFiles = findAgentSourceFiles(configPath);
+
+      if (configFile) {
         results.push({
           check: "config-file",
           passed: true,
           message: `Found config: ${configFile}`,
+        });
+      } else if (agentFiles.length > 0) {
+        results.push({
+          check: "config-file",
+          passed: true,
+          message: `Found ${agentFiles.length} agent source file(s) in agents/`,
+        });
+      } else {
+        results.push({
+          check: "config-file",
+          passed: false,
+          message: `No agent config found in ${configPath}. Expected one of: ${possibleFiles.join(", ")}, or agent files in agents/`,
         });
       }
 
@@ -115,6 +145,7 @@ export function createValidateCommand(): Command {
         results.push({
           check: "env-file",
           passed: !options.strict,
+          warning: true,
           message: "WARNING: .env file found \u2014 ensure secrets are not included in deployment",
         });
       }
@@ -125,6 +156,7 @@ export function createValidateCommand(): Command {
         results.push({
           check: "gitignore",
           passed: !options.strict,
+          warning: true,
           message: "WARNING: No .gitignore found \u2014 recommended for deployment safety",
         });
       }
@@ -133,8 +165,18 @@ export function createValidateCommand(): Command {
       console.log("\n  Agent Validation Report\n");
       let hasFailures = false;
       for (const result of results) {
-        const icon = result.passed ? "\u2713" : "\u2717";
-        const color = result.passed ? "\x1b[32m" : "\x1b[31m";
+        let icon: string;
+        let color: string;
+        if (!result.passed) {
+          icon = "\u2717";
+          color = "\x1b[31m";
+        } else if (result.warning) {
+          icon = "!";
+          color = "\x1b[33m";
+        } else {
+          icon = "\u2713";
+          color = "\x1b[32m";
+        }
         console.log(`  ${color}${icon}\x1b[0m ${result.check}: ${result.message}`);
         if (!result.passed) hasFailures = true;
       }
@@ -144,7 +186,7 @@ export function createValidateCommand(): Command {
       );
 
       if (hasFailures) {
-        process.exit(1);
+        process.exitCode = 1;
       }
     });
 }

@@ -21,13 +21,20 @@ export function createCLI(): Command {
 
   program.name("aizona").description("AIZona Agent Development Kit CLI").version("0.1.0");
 
-  // aizona init
+  // aizona init [name]
   program
-    .command("init")
+    .command("init [name]")
     .description("Scaffold a new ADK project")
     .option("-t, --template <template>", "Template to use", "basic")
-    .option("-d, --dir <directory>", "Target directory", ".")
-    .action(initCommand);
+    .option("-d, --dir <directory>", "Target directory")
+    .action(async (name: string | undefined, options: { template?: string; dir?: string }) => {
+      try {
+        await initCommand({ name, template: options.template, dir: options.dir });
+      } catch (error) {
+        console.error(`Failed: ${error instanceof Error ? error.message : error}`);
+        process.exitCode = 1;
+      }
+    });
 
   // aizona agent-init <name> — scaffold a fresh A2A agent project
   program
