@@ -34,17 +34,20 @@ export async function initCommand(options: InitOptions): Promise<void> {
   }
 
   // Resolve target directory: explicit --dir wins, then positional name, then cwd.
+  // projectName is only set when the user explicitly provided --name; otherwise the
+  // template's default package.json "name" is preserved.
   let dir: string;
   let projectName: string | undefined;
   if (options.dir) {
     dir = path.resolve(options.dir);
-    projectName = options.name ? sanitizeProjectName(options.name) : path.basename(dir);
+    if (options.name) {
+      projectName = sanitizeProjectName(options.name);
+    }
   } else if (options.name) {
     projectName = sanitizeProjectName(options.name);
     dir = path.resolve(process.cwd(), projectName);
   } else {
     dir = path.resolve(".");
-    projectName = path.basename(dir);
   }
 
   if (fs.existsSync(dir) && fs.readdirSync(dir).length > 0) {
