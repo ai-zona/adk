@@ -38,28 +38,28 @@ jobs:
         if: inputs.package == 'all' || inputs.package == 'adk' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/adk && npm publish --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
           
       - name: Publish @aizona/adk-cli
         if: inputs.package == 'all' || inputs.package == 'adk-cli' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/adk-cli && npm publish --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
           
       - name: Publish @aizona/adk-server
         if: inputs.package == 'all' || inputs.package == 'adk-server' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/adk-server && npm publish --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
           
       - name: Publish @aizona/aza-client
         if: inputs.package == 'all' || inputs.package == 'aza-client' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/aza-client && npm publish --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
           
-      - name: Publish @aizona/workspace-types
+      - name: Publish @aizona/contracts-workspace-architect
         if: inputs.package == 'all' || inputs.package == 'workspace-types' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/workspace-types && npm publish --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
