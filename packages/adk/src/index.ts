@@ -45,6 +45,37 @@ export { CodeExecutor } from "./runner/code-executor";
 export type { CodeExecutorConfig, CodeExecutionResult } from "./runner/code-executor";
 export { createExecuteCodeTool } from "./tools/built-in/execute-code";
 
+// Observability — Logging, Metrics, Errors, Audit
+export {
+  Logger,
+  ConsoleTransport,
+  MemoryTransport,
+  getDefaultLogger,
+  setDefaultLogger,
+} from "./logging/logger";
+export type {
+  LogLevel,
+  LogContext,
+  LogRecord,
+  LogTransport,
+  LoggerOptions,
+} from "./logging/logger";
+export {
+  MetricsCollector,
+  METRIC_NAMES,
+  getDefaultMetrics,
+  setDefaultMetrics,
+} from "./metrics/collector";
+export type { MetricsSnapshot } from "./metrics/collector";
+export { classifyError } from "./errors/classify";
+export type { ClassifiedError, ErrorCategory } from "./errors/classify";
+export type {
+  RunAudit,
+  RunAuditStatus,
+  RunAuditTurn,
+  RunAuditToolCall,
+} from "./types/audit";
+
 // Providers
 export { BaseProvider } from "./providers/base-provider";
 export { AnthropicProvider } from "./providers/anthropic";

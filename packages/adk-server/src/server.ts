@@ -2,7 +2,7 @@
 // ADK Hono Server
 // ──────────────────────────────────────────────────────
 
-import type { ADKLLMProvider, ProxyRouter } from "@aizonaai/adk";
+import type { ADKLLMProvider, MetricsCollector, ProxyRouter } from "@aizonaai/adk";
 import { Hono } from "hono";
 import { apiKeyAuth } from "./middleware/api-key-auth";
 import { corsMiddleware } from "./middleware/cors";
@@ -10,7 +10,7 @@ import { rateLimiter } from "./middleware/rate-limiter";
 import { usageTracker } from "./middleware/usage-tracker";
 import { agentRoutes } from "./routes/agents";
 import { chatRoutes } from "./routes/chat";
-import { healthRoutes } from "./routes/health";
+import { healthRoutes, type ReadinessProbe } from "./routes/health";
 import { keyRoutes } from "./routes/keys";
 import { runRoutes } from "./routes/runs";
 import { sessionRoutes } from "./routes/sessions";
@@ -36,6 +36,10 @@ export interface ServerConfig {
   basePath?: string;
   /** Storage backend (default: in-memory) */
   storage?: StorageBackend;
+  /** Readiness probes for /readiness (provider + storage health). */
+  readinessProbes?: ReadinessProbe[];
+  /** Metrics collector exposed at /metrics (defaults to process-wide). */
+  metrics?: MetricsCollector;
 }
 
 /** API key record from storage */
@@ -92,8 +96,15 @@ export function createServer(config: ServerConfig = {}): Hono {
   // Global middleware
   app.use("*", corsMiddleware(config.corsOrigins));
 
-  // Health check (no auth) — mounted at basePath so /api/adk/health works in Next.js mode
-  app.route(`${prefix}/health`, healthRoutes());
+  // Health check (no auth) — mounted at basePath so /api/adk/health works in Next.js mode.
+  // Also exposes /health/readiness (provider+storage) and /health/metrics (Prometheus).
+  app.route(
+    `${prefix}/health`,
+    healthRoutes({
+      readinessProbes: config.readinessProbes,
+      metrics: config.metrics,
+    }),
+  );
 
   // API routes (with auth)
   const api = new Hono();

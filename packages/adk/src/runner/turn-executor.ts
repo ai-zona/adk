@@ -6,8 +6,11 @@
 
 import type { Agent } from "../agent/define-agent";
 import { extractText } from "../content/helpers";
+import { classifyError } from "../errors/classify";
 import type { ADKEventBus } from "../events/event-bus";
 import { GuardrailEngine } from "../guardrails/engine";
+import { getDefaultLogger, type Logger } from "../logging/logger";
+import { getDefaultMetrics, METRIC_NAMES, type MetricsCollector } from "../metrics/collector";
 import { ensureJsonSchema } from "../output/structured-output";
 import type { ToolRegistry } from "../tools/tool-registry";
 import type { ToolSelector } from "../tools/tool-selector";
@@ -38,6 +41,17 @@ export interface TurnResult {
   handoffReason?: string;
   /** Guardrail results from this turn */
   guardrailResults: import("../types/guardrail").GuardrailResult[];
+  /** Per-turn telemetry: counters & timings for the audit trail. */
+  telemetry: {
+    inputTokens: number;
+    outputTokens: number;
+    costUsd: number;
+    durationMs: number;
+    providerId?: string;
+    model?: string;
+    toolCalls: string[];
+    toolTimings: { name: string; durationMs: number; isError: boolean }[];
+  };
 }
 
 /** Handoff tool prefix */
@@ -49,6 +63,8 @@ export class TurnExecutor {
   private eventBus?: ADKEventBus;
   private toolRegistry?: ToolRegistry;
   private currentTrace?: Trace;
+  private logger: Logger = getDefaultLogger();
+  private metrics: MetricsCollector = getDefaultMetrics();
 
   /** Set a tool selector for dynamic per-turn tool filtering */
   setToolSelector(selector: ToolSelector): void {
@@ -58,6 +74,7 @@ export class TurnExecutor {
   /** Set event bus for observability */
   setEventBus(eventBus: ADKEventBus): void {
     this.eventBus = eventBus;
+    this.guardrailEngine.setEventBus(eventBus);
   }
 
   /** Set tool registry for deferred tool loading */
@@ -68,6 +85,16 @@ export class TurnExecutor {
   /** Set trace for span-based tracing */
   setTrace(trace?: Trace): void {
     this.currentTrace = trace;
+  }
+
+  /** Override the logger used by this executor. */
+  setLogger(logger: Logger): void {
+    this.logger = logger;
+  }
+
+  /** Override the metrics collector used by this executor. */
+  setMetrics(metrics: MetricsCollector): void {
+    this.metrics = metrics;
   }
 
   /**
@@ -88,6 +115,8 @@ export class TurnExecutor {
     onEvent?: (event: StreamEvent) => void,
   ): Promise<TurnResult> {
     const allGuardrailResults: import("../types/guardrail").GuardrailResult[] = [];
+    const turnStartedAt = Date.now();
+    const toolTimings: { name: string; durationMs: number; isError: boolean }[] = [];
 
     // Build tool definitions for LLM (with optional per-turn filtering)
     const tools = this.buildToolDefs(agent, messages, ctx, handoffToolDefs);
@@ -110,12 +139,37 @@ export class TurnExecutor {
       params.maxTokens = modelConfig.maxTokens;
     }
 
+    const turnLogger = this.logger.child({
+      runId: ctx.runId,
+      agentName: ctx.agentName,
+      turnNumber: ctx.turnNumber,
+      model: params.model,
+    });
+
     // Call LLM with tracing
     const llmSpan = this.currentTrace?.startSpan("llm", "llm");
     llmSpan?.setAttribute("model", params.model ?? "default");
 
     const llmStart = Date.now();
-    const response = await provider.chatWithTools(params);
+    let response: ChatResponseWithToolCalls;
+    try {
+      response = await provider.chatWithTools(params);
+    } catch (err) {
+      const classified = classifyError(err);
+      this.metrics.incrementCounter(METRIC_NAMES.errorsByType, {
+        category: classified.category,
+        code: classified.code ?? classified.errorName,
+        provider: classified.providerId,
+      });
+      turnLogger.error("llm call failed", err, {
+        provider: classified.providerId,
+        category: classified.category,
+        fingerprint: classified.fingerprint,
+      });
+      llmSpan?.setError(classified.message);
+      llmSpan?.end();
+      throw err;
+    }
     const llmLatencyMs = Date.now() - llmStart;
 
     llmSpan?.setAttributes({
@@ -147,6 +201,28 @@ export class TurnExecutor {
       latencyMs: llmLatencyMs,
       ttfbMs: response.ttfbMs,
       timestamp: Date.now(),
+    });
+
+    // Tokens metric (separate counters per token type so a single label set is enough)
+    const tokenLabels = {
+      provider: response.providerId ?? "unknown",
+      model: response.model ?? params.model ?? "unknown",
+      type: "input",
+    };
+    this.metrics.incrementCounter(METRIC_NAMES.tokensUsed, tokenLabels, response.inputTokens ?? 0);
+    this.metrics.incrementCounter(
+      METRIC_NAMES.tokensUsed,
+      { ...tokenLabels, type: "output" },
+      response.outputTokens ?? 0,
+    );
+
+    turnLogger.debug("llm call completed", {
+      provider: response.providerId,
+      model: response.model ?? params.model,
+      duration: llmLatencyMs,
+      inputTokens: response.inputTokens,
+      outputTokens: response.outputTokens,
+      costUsd: response.costUsd,
     });
 
     // Process response
@@ -189,6 +265,13 @@ export class TurnExecutor {
         finished: true,
         output: response.content,
         guardrailResults: allGuardrailResults,
+        telemetry: this.buildTelemetry({
+          response,
+          model: params.model,
+          startedAt: turnStartedAt,
+          toolCalls: [],
+          toolTimings,
+        }),
       };
     }
 
@@ -214,6 +297,13 @@ export class TurnExecutor {
           handoffTarget: targetAgent,
           handoffReason: reason,
           guardrailResults: allGuardrailResults,
+          telemetry: this.buildTelemetry({
+            response,
+            model: params.model,
+            startedAt: turnStartedAt,
+            toolCalls: response.toolCalls.map((tc) => tc.name),
+            toolTimings,
+          }),
         };
       }
     }
@@ -231,12 +321,39 @@ export class TurnExecutor {
     for (const result of toolCallResults) {
       allGuardrailResults.push(...result.guardrailResults);
       toolResultMessages.push(result.message);
+      toolTimings.push(result.timing);
     }
 
     return {
       newMessages: [assistantMessage, ...toolResultMessages],
       finished: false,
       guardrailResults: allGuardrailResults,
+      telemetry: this.buildTelemetry({
+        response,
+        model: params.model,
+        startedAt: turnStartedAt,
+        toolCalls: nonHandoffCalls.map((tc) => tc.name),
+        toolTimings,
+      }),
+    };
+  }
+
+  private buildTelemetry(args: {
+    response: ChatResponseWithToolCalls;
+    model?: string;
+    startedAt: number;
+    toolCalls: string[];
+    toolTimings: { name: string; durationMs: number; isError: boolean }[];
+  }): TurnResult["telemetry"] {
+    return {
+      inputTokens: args.response.inputTokens ?? 0,
+      outputTokens: args.response.outputTokens ?? 0,
+      costUsd: args.response.costUsd ?? 0,
+      durationMs: Date.now() - args.startedAt,
+      providerId: args.response.providerId,
+      model: args.response.model ?? args.model,
+      toolCalls: args.toolCalls,
+      toolTimings: args.toolTimings,
     };
   }
 
@@ -250,8 +367,10 @@ export class TurnExecutor {
   ): Promise<{
     message: ChatMessage;
     guardrailResults: import("../types/guardrail").GuardrailResult[];
+    timing: { name: string; durationMs: number; isError: boolean };
   }> {
     const guardrailResults: import("../types/guardrail").GuardrailResult[] = [];
+    const callStart = Date.now();
 
     // Find tool — check agent tools first, then registry for deferred tools
     let toolDef: ToolDef | undefined = agent.getTools().find((t) => t.name === toolCall.name);
@@ -260,6 +379,8 @@ export class TurnExecutor {
       if (deferred) toolDef = deferred;
     }
     if (!toolDef) {
+      const durationMs = Date.now() - callStart;
+      this.recordToolMetrics(toolCall.name, durationMs, "unknown_tool");
       return {
         message: {
           role: "tool",
@@ -274,6 +395,7 @@ export class TurnExecutor {
           ],
         },
         guardrailResults,
+        timing: { name: toolCall.name, durationMs, isError: true },
       };
     }
 
@@ -330,10 +452,12 @@ export class TurnExecutor {
         if (toolDef.hooks?.preExecute) {
           const hookResult = await toolDef.hooks.preExecute(currentInput, toolCtx);
           if (!hookResult.allow) {
+            const durationMs = Date.now() - toolStart;
             toolSpan?.setAttribute("success", false);
             toolSpan?.setAttribute("blocked", true);
-            toolSpan?.setAttribute("latencyMs", Date.now() - toolStart);
+            toolSpan?.setAttribute("latencyMs", durationMs);
             toolSpan?.end();
+            this.recordToolMetrics(toolCall.name, durationMs, "blocked");
             return {
               message: {
                 role: "tool",
@@ -348,6 +472,7 @@ export class TurnExecutor {
                 ],
               },
               guardrailResults,
+              timing: { name: toolCall.name, durationMs, isError: true },
             };
           }
           if (hookResult.modifiedInput !== undefined) {
@@ -372,9 +497,11 @@ export class TurnExecutor {
 
         const outputStr = typeof output === "string" ? output : JSON.stringify(output);
 
+        const durationMs = Date.now() - toolStart;
         toolSpan?.setAttribute("success", true);
-        toolSpan?.setAttribute("latencyMs", Date.now() - toolStart);
+        toolSpan?.setAttribute("latencyMs", durationMs);
         toolSpan?.end();
+        this.recordToolMetrics(toolCall.name, durationMs, "ok");
 
         onEvent?.({
           type: "tool_call_end",
@@ -390,6 +517,7 @@ export class TurnExecutor {
             toolResults: [{ toolCallId: toolCall.id, name: toolCall.name, output }],
           },
           guardrailResults,
+          timing: { name: toolCall.name, durationMs, isError: false },
         };
       } catch (error) {
         lastError = error instanceof Error ? error.message : String(error);
@@ -401,10 +529,12 @@ export class TurnExecutor {
     }
 
     // All attempts failed
+    const durationMs = Date.now() - toolStart;
     toolSpan?.setAttribute("success", false);
-    toolSpan?.setAttribute("latencyMs", Date.now() - toolStart);
+    toolSpan?.setAttribute("latencyMs", durationMs);
     toolSpan?.setError(lastError ?? "Unknown error");
     toolSpan?.end();
+    this.recordToolMetrics(toolCall.name, durationMs, "error");
 
     return {
       message: {
@@ -420,7 +550,19 @@ export class TurnExecutor {
         ],
       },
       guardrailResults,
+      timing: { name: toolCall.name, durationMs, isError: true },
     };
+  }
+
+  private recordToolMetrics(
+    toolName: string,
+    durationMs: number,
+    status: "ok" | "error" | "blocked" | "unknown_tool",
+  ): void {
+    this.metrics.incrementCounter(METRIC_NAMES.toolCallsTotal, { tool: toolName, status });
+    this.metrics.observeHistogram(METRIC_NAMES.toolCallDurationMs, durationMs, {
+      tool: toolName,
+    });
   }
 
   /** Run a promise with a timeout */

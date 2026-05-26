@@ -3,7 +3,11 @@
 // ──────────────────────────────────────────────────────
 
 import type { Artifact, ArtifactStore } from "../artifacts/artifact-store";
+import type { ClassifiedError } from "../errors/classify";
+import type { Logger } from "../logging/logger";
+import type { MetricsCollector } from "../metrics/collector";
 import type { ModelConfig } from "./agent";
+import type { RunAudit } from "./audit";
 import type { AudioPart, ContentPart, ImagePart, UIArtifactPart, VideoPart } from "./content";
 import type { GuardrailResult } from "./guardrail";
 import type { CatalogModel, ChatMessage } from "./llm";
@@ -159,6 +163,18 @@ export interface RunnerConfig {
 
   /** Enable code execution mode (programmatic tool calling) */
   enableCodeExecution?: boolean;
+
+  /** Structured logger (defaults to process-wide logger). */
+  logger?: Logger;
+
+  /** Metrics collector (defaults to process-wide collector). */
+  metrics?: MetricsCollector;
+
+  /** Called once per run with a structured audit record. */
+  onRunComplete?: (audit: RunAudit) => void | Promise<void>;
+
+  /** Called when a run errors or is aborted, with the classified error. */
+  onError?: (error: ClassifiedError, ctx: RunContext) => void | Promise<void>;
 }
 
 /** Tracing configuration */
