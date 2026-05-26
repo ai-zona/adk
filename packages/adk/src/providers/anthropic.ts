@@ -115,12 +115,31 @@ export class AnthropicProvider extends BaseProvider {
         }),
     };
 
-    // System prompt
+    // System prompt — promote to array form when cache_control is set, so the
+    // system block can be cached across turns.
     const systemMsg = params.messages.find((m) => m.role === "system");
     const systemPrompt =
       params.systemPrompt ?? (systemMsg ? extractText(systemMsg.content) : undefined);
     if (systemPrompt) {
-      body.system = systemPrompt;
+      if (systemMsg?.cacheControl) {
+        body.system = [
+          {
+            type: "text",
+            text: systemPrompt,
+            cache_control: systemMsg.cacheControl,
+          },
+        ];
+      } else {
+        body.system = systemPrompt;
+      }
+    }
+
+    // Extended thinking
+    if (params.thinking) {
+      body.thinking = {
+        type: params.thinking.type,
+        budget_tokens: params.thinking.budgetTokens,
+      };
     }
 
     // Tools
@@ -166,23 +185,40 @@ export class AnthropicProvider extends BaseProvider {
     }
 
     const data = (await response.json()) as {
-      content: Array<{ type: string; text?: string; id?: string; name?: string; input?: unknown }>;
+      content: Array<{
+        type: string;
+        text?: string;
+        thinking?: string;
+        id?: string;
+        name?: string;
+        input?: unknown;
+      }>;
       model: string;
-      usage: { input_tokens: number; output_tokens: number };
+      usage: {
+        input_tokens: number;
+        output_tokens: number;
+        cache_creation_input_tokens?: number;
+        cache_read_input_tokens?: number;
+      };
       stop_reason: string;
     };
 
     const latencyMs = Date.now() - startTime;
     const inputTokens = data.usage.input_tokens;
     const outputTokens = data.usage.output_tokens;
+    const cacheCreationInputTokens = data.usage.cache_creation_input_tokens;
+    const cacheReadInputTokens = data.usage.cache_read_input_tokens;
 
-    // Extract text and tool calls
+    // Extract text, thinking, and tool calls
     let content = "";
+    let thinking = "";
     const toolCalls: Array<{ id: string; name: string; input: unknown }> = [];
 
     for (const block of data.content) {
       if (block.type === "text" && block.text) {
         content += block.text;
+      } else if (block.type === "thinking" && block.thinking) {
+        thinking += block.thinking;
       } else if (block.type === "tool_use") {
         toolCalls.push({
           id: block.id!,
@@ -192,6 +228,12 @@ export class AnthropicProvider extends BaseProvider {
       }
     }
 
+    // Cache tokens billed at the input rate (cache reads at a discount in Anthropic's
+    // real pricing — we treat them as input-rate here so the local estimate at least
+    // counts the read volume; provider-side billing is authoritative).
+    const billableInputTokens =
+      inputTokens + (cacheCreationInputTokens ?? 0) + (cacheReadInputTokens ?? 0);
+
     return {
       content,
       model: data.model,
@@ -200,9 +242,12 @@ export class AnthropicProvider extends BaseProvider {
       outputTokens,
       totalTokens: inputTokens + outputTokens,
       latencyMs,
-      costUsd: this.calculateCost(inputTokens, outputTokens, model),
+      costUsd: this.calculateCost(billableInputTokens, outputTokens, model),
       finishReason: data.stop_reason,
       toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+      cacheCreationInputTokens,
+      cacheReadInputTokens,
+      thinking: thinking || undefined,
     };
   }
 
@@ -224,7 +269,26 @@ export class AnthropicProvider extends BaseProvider {
     const streamSysMsg = params.messages.find((m) => m.role === "system");
     const streamSystemPrompt =
       params.systemPrompt ?? (streamSysMsg ? extractText(streamSysMsg.content) : undefined);
-    if (streamSystemPrompt) body.system = streamSystemPrompt;
+    if (streamSystemPrompt) {
+      if (streamSysMsg?.cacheControl) {
+        body.system = [
+          {
+            type: "text",
+            text: streamSystemPrompt,
+            cache_control: streamSysMsg.cacheControl,
+          },
+        ];
+      } else {
+        body.system = streamSystemPrompt;
+      }
+    }
+
+    if (params.thinking) {
+      body.thinking = {
+        type: params.thinking.type,
+        budget_tokens: params.thinking.budgetTokens,
+      };
+    }
 
     if (params.tools) {
       body.tools = params.tools.map((t) => ({
@@ -276,10 +340,20 @@ export class AnthropicProvider extends BaseProvider {
           try {
             const event = JSON.parse(jsonStr) as {
               type: string;
-              delta?: { type: string; text?: string; partial_json?: string };
+              delta?: {
+                type: string;
+                text?: string;
+                thinking?: string;
+                partial_json?: string;
+              };
               content_block?: { type: string; id?: string; name?: string };
               index?: number;
-              usage?: { input_tokens: number; output_tokens: number };
+              usage?: {
+                input_tokens: number;
+                output_tokens: number;
+                cache_creation_input_tokens?: number;
+                cache_read_input_tokens?: number;
+              };
             };
 
             if (event.type === "content_block_start" && event.content_block?.type === "tool_use") {
@@ -291,6 +365,8 @@ export class AnthropicProvider extends BaseProvider {
             } else if (event.type === "content_block_delta") {
               if (event.delta?.type === "text_delta" && event.delta.text) {
                 yield { type: "text_delta", content: event.delta.text };
+              } else if (event.delta?.type === "thinking_delta" && event.delta.thinking) {
+                yield { type: "thinking_delta", content: event.delta.thinking };
               } else if (event.delta?.type === "input_json_delta" && event.delta.partial_json) {
                 yield {
                   type: "tool_use_delta",
@@ -299,13 +375,15 @@ export class AnthropicProvider extends BaseProvider {
                 };
               }
             } else if (event.type === "content_block_stop") {
-              // Could be text or tool_use end
+              // Could be text, thinking, or tool_use end
             } else if (event.type === "message_delta" && event.usage) {
               yield {
                 type: "message_end",
                 usage: {
                   inputTokens: event.usage.input_tokens,
                   outputTokens: event.usage.output_tokens,
+                  cacheCreationInputTokens: event.usage.cache_creation_input_tokens,
+                  cacheReadInputTokens: event.usage.cache_read_input_tokens,
                 },
               };
             }

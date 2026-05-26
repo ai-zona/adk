@@ -25,6 +25,17 @@ export interface ToolResult {
   isError?: boolean;
 }
 
+/** Anthropic-style cache control marker for prompt caching */
+export interface CacheControl {
+  type: "ephemeral";
+}
+
+/** Anthropic-style extended thinking configuration */
+export interface ThinkingConfig {
+  type: "enabled";
+  budgetTokens: number;
+}
+
 /** Chat message — extends platform version with tool support */
 export interface ChatMessage {
   role: ChatRole;
@@ -32,6 +43,8 @@ export interface ChatMessage {
   name?: string;
   toolCalls?: ToolCall[];
   toolResults?: ToolResult[];
+  /** Mark this message for prompt caching (Anthropic-specific; ignored by other providers). */
+  cacheControl?: CacheControl;
 }
 
 /** Chat completion parameters */
@@ -43,6 +56,8 @@ export interface ChatParams {
   topP?: number;
   stopSequences?: string[];
   systemPrompt?: string;
+  /** Enable extended thinking (Anthropic-specific; ignored by other providers). */
+  thinking?: ThinkingConfig;
 }
 
 /** Chat completion parameters with tool support */
@@ -77,6 +92,12 @@ export interface ChatResponse {
   ttfbMs?: number;
   costUsd: number;
   finishReason: string;
+  /** Tokens written to the prompt cache on this call (Anthropic). */
+  cacheCreationInputTokens?: number;
+  /** Tokens read from the prompt cache on this call (Anthropic). */
+  cacheReadInputTokens?: number;
+  /** Aggregated extended-thinking content, when the model was run with thinking enabled. */
+  thinking?: string;
 }
 
 /** Chat response with tool calls */
@@ -126,10 +147,19 @@ export interface EmbedResponse {
 /** Stream chunk types from LLM providers */
 export type StreamChunk =
   | { type: "text_delta"; content: string }
+  | { type: "thinking_delta"; content: string }
   | { type: "tool_use_start"; id: string; name: string }
   | { type: "tool_use_delta"; id: string; inputJson: string }
   | { type: "tool_use_end"; id: string }
-  | { type: "message_end"; usage: { inputTokens: number; outputTokens: number } };
+  | {
+      type: "message_end";
+      usage: {
+        inputTokens: number;
+        outputTokens: number;
+        cacheCreationInputTokens?: number;
+        cacheReadInputTokens?: number;
+      };
+    };
 
 /** Base LLM provider interface (from platform-agents) */
 export interface LLMProvider {
