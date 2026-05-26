@@ -35,8 +35,7 @@ jobs:
         run: |
           pnpm --filter @aizona/adk run build
           pnpm --filter @aizona/adk-server run build
-          pnpm --filter @aizona/adk-cli run build
-        # Excluded: aza-protocol, aza-client (need @aizona/db), workspace-types (no tsup entry point)
+        # Excluded from v0.1.0: adk-cli (DTS needs adk-server types), aza-protocol, aza-client, workspace-types
 
       # Publish in dependency order: leaf packages first, then dependents
       - name: Publish @aizona/adk (leaf - no @aizona deps)
@@ -53,8 +52,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
           
-      - name: Publish @aizona/adk-cli (depends on @aizona/adk + @aizona/adk-server)
-        if: inputs.package == 'all' || inputs.package == 'adk-cli' || startsWith(github.ref, 'refs/tags/')
-        run: cd packages/adk-cli && npm publish --access public --provenance || echo "Already published or error"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
+      # Note: @aizona/adk-cli excluded from v0.1.0 (DTS build needs adk-server types installed)
