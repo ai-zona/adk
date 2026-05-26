@@ -7,6 +7,8 @@
 
 // ── Platform Events (extracted) ──
 
+import type { RunAudit } from "./audit";
+
 export interface TaskSubmittedEvent {
   taskId: string;
   agentSlug: string;
@@ -274,6 +276,7 @@ export interface ADKEventMap {
   "run.started": RunStartedEvent;
   "run.completed": RunCompletedEvent;
   "run.failed": RunFailedEvent;
+  "run.audit": RunAudit;
   handoff: HandoffEvent;
   "guardrail.triggered": GuardrailTriggeredEvent;
   "tool.executed": ToolExecutedEvent;

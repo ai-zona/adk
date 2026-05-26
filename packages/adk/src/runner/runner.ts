@@ -7,9 +7,12 @@
 
 import type { Agent } from "../agent/define-agent";
 import { contentToParts, extractText, isMultiModalContent } from "../content/helpers";
+import { classifyError, type ClassifiedError } from "../errors/classify";
 import type { ADKEventBus } from "../events/event-bus";
 import { NotesStore } from "../harness/notes-store";
 import { ProgressTracker } from "../harness/progress-tracker";
+import { getDefaultLogger, type Logger } from "../logging/logger";
+import { getDefaultMetrics, METRIC_NAMES, type MetricsCollector } from "../metrics/collector";
 import { ContextManager } from "../sessions/context-manager";
 import { TokenCounter } from "../sessions/token-counter";
 import { createExecuteCodeTool } from "../tools/built-in/execute-code";
@@ -18,6 +21,7 @@ import { createProgressTool } from "../tools/built-in/progress-tool";
 import { ToolSelector } from "../tools/tool-selector";
 import type { Trace, Tracer } from "../tracing/tracer";
 import type { ContextConfig } from "../types/agent";
+import type { RunAudit, RunAuditStatus } from "../types/audit";
 import type { ContentPart } from "../types/content";
 import type { GuardrailResult } from "../types/guardrail";
 import type { ADKLLMProvider, CatalogModel, ChatMessage, LLMToolDefinition } from "../types/llm";
@@ -27,10 +31,12 @@ import type {
   RunConfig,
   RunContext,
   RunResult,
+  RunUsage,
   RunnerConfig,
   StreamEvent,
 } from "../types/runner";
 import type { ToolDef } from "../types/tool";
+import { RunAuditBuilder } from "./audit-builder";
 import { createRunContext, createRunId, createTraceId } from "./context";
 import { TurnExecutor } from "./turn-executor";
 
@@ -47,6 +53,8 @@ export class Runner {
   private modelContextWindow?: number;
   private modelCatalog?: CatalogModel[];
   private tokenCounter = new TokenCounter();
+  private logger: Logger;
+  private metrics: MetricsCollector;
 
   constructor(config?: RunnerConfig & { provider?: ADKLLMProvider; eventBus?: ADKEventBus }) {
     this.config = config ?? {};
@@ -55,11 +63,15 @@ export class Runner {
     this.tracer = config?.tracer;
     this.modelContextWindow = config?.modelContextWindow;
     this.modelCatalog = config?.modelCatalog;
+    this.logger = config?.logger ?? getDefaultLogger();
+    this.metrics = config?.metrics ?? getDefaultMetrics();
 
     // Wire eventBus to turn executor
     if (this.eventBus) {
       this.turnExecutor.setEventBus(this.eventBus);
     }
+    this.turnExecutor.setLogger(this.logger);
+    this.turnExecutor.setMetrics(this.metrics);
   }
 
   /** Register an agent (for handoff resolution) */
@@ -96,6 +108,18 @@ export class Runner {
       signal: input.signal,
       metadata: input.metadata,
     });
+
+    const runLogger = this.logger.child({
+      runId,
+      agentName: agent.name,
+      sessionId: input.sessionId,
+      traceId,
+    });
+    const auditBuilder = new RunAuditBuilder(runId, traceId, input.sessionId);
+    this.metrics.incrementCounter(METRIC_NAMES.runsTotal, { agent: agent.name, status: "started" });
+    this.metrics.adjustGauge(METRIC_NAMES.runsActive, 1, { agent: agent.name });
+
+    runLogger.info("run started");
 
     this.eventBus?.emit("run.started", {
       runId,
@@ -163,12 +187,62 @@ export class Runner {
     );
     const contextStrategy = currentAgent.config.contextConfig?.strategy ?? "sliding-window";
 
+    const finalize = async (
+      status: RunAuditStatus,
+      finalAgentName: string,
+      totalTurns: number,
+      usage: RunUsage,
+      error?: ClassifiedError,
+    ): Promise<RunAudit> => {
+      this.metrics.adjustGauge(METRIC_NAMES.runsActive, -1, { agent: agent.name });
+      this.metrics.incrementCounter(METRIC_NAMES.runsTotal, {
+        agent: agent.name,
+        status,
+      });
+      this.metrics.observeHistogram(METRIC_NAMES.turnsPerRun, totalTurns, {
+        agent: agent.name,
+      });
+      const audit = auditBuilder.finish({
+        status,
+        finalAgent: finalAgentName,
+        totalTurns,
+        usage,
+        handoffs,
+        guardrailResults: allGuardrailResults,
+        error,
+      });
+      this.eventBus?.emit("run.audit", audit);
+      if (this.config.onRunComplete) {
+        try {
+          await this.config.onRunComplete(audit);
+        } catch (cbErr) {
+          runLogger.error("onRunComplete callback threw", cbErr);
+        }
+      }
+      return audit;
+    };
+
     for (let turn = 0; turn < maxTurns; turn++) {
       // Check abort signal
       if (input.signal?.aborted) {
         runSpan?.setError("Run aborted");
         runSpan?.end();
         if (trace) await this.tracer?.endAndExport(trace);
+        const abortClassified = classifyError(new Error("Run aborted"));
+        this.metrics.incrementCounter(METRIC_NAMES.errorsByType, {
+          category: abortClassified.category,
+          code: abortClassified.errorName,
+          provider: abortClassified.providerId,
+        });
+        await finalize("aborted", currentAgent.name, turn, ctx.usage, abortClassified);
+        if (this.config.onError) {
+          try {
+            await this.config.onError(abortClassified, ctx);
+          } catch (cbErr) {
+            runLogger.error("onError callback threw", cbErr);
+          }
+        }
+        runLogger.warn("run aborted");
         throw new Error("Run aborted");
       }
 
@@ -217,14 +291,43 @@ export class Runner {
       turnSpan?.setAttribute("turnNumber", turn + 1);
       turnSpan?.setAttribute("agentName", currentAgent.name);
 
-      const turnResult = await this.turnExecutor.executeTurn(
-        currentAgent,
-        messages,
-        provider,
-        ctx,
-        guardrails,
-        handoffToolDefs,
-      );
+      let turnResult: Awaited<ReturnType<TurnExecutor["executeTurn"]>>;
+      try {
+        turnResult = await this.turnExecutor.executeTurn(
+          currentAgent,
+          messages,
+          provider,
+          ctx,
+          guardrails,
+          handoffToolDefs,
+        );
+      } catch (err) {
+        const classified = classifyError(err);
+        turnSpan?.setError(classified.message);
+        turnSpan?.end();
+        runSpan?.setError(classified.message);
+        runSpan?.end();
+        if (trace) await this.tracer?.endAndExport(trace);
+        this.metrics.incrementCounter(METRIC_NAMES.errorsByType, {
+          category: classified.category,
+          code: classified.code ?? classified.errorName,
+          provider: classified.providerId,
+        });
+        await finalize("errored", currentAgent.name, turn, ctx.usage, classified);
+        if (this.config.onError) {
+          try {
+            await this.config.onError(classified, ctx);
+          } catch (cbErr) {
+            runLogger.error("onError callback threw", cbErr);
+          }
+        }
+        runLogger.error("turn failed", err, {
+          turnNumber: turn + 1,
+          category: classified.category,
+          fingerprint: classified.fingerprint,
+        });
+        throw err;
+      }
 
       // End turn span
       turnSpan?.end();
@@ -232,6 +335,32 @@ export class Runner {
       // Append messages
       messages.push(...turnResult.newMessages);
       allGuardrailResults.push(...turnResult.guardrailResults);
+
+      // Record per-turn audit info
+      auditBuilder.recordTurn({
+        turnNumber: turn + 1,
+        agentName: currentAgent.name,
+        inputTokens: turnResult.telemetry.inputTokens,
+        outputTokens: turnResult.telemetry.outputTokens,
+        costUsd: turnResult.telemetry.costUsd,
+        durationMs: turnResult.telemetry.durationMs,
+        toolCalls: turnResult.telemetry.toolCalls,
+        providerId: turnResult.telemetry.providerId,
+        model: turnResult.telemetry.model,
+      });
+      for (const t of turnResult.telemetry.toolTimings) {
+        auditBuilder.recordTool({ name: t.name, durationMs: t.durationMs, isError: t.isError });
+      }
+
+      // Guardrail metric: count blocked results
+      for (const g of turnResult.guardrailResults) {
+        if (!g.passed) {
+          this.metrics.incrementCounter(METRIC_NAMES.guardrailTriggers, {
+            guardrail: g.name,
+            severity: g.severity ?? "error",
+          });
+        }
+      }
 
       this.eventBus?.emit("tool.executed", {
         runId,
@@ -300,6 +429,14 @@ export class Runner {
           totalTurns: turn + 1,
         };
 
+        await finalize("completed", currentAgent.name, turn + 1, ctx.usage);
+
+        runLogger.info("run completed", {
+          totalTurns: turn + 1,
+          duration: totalLatencyMs,
+          costUsd: ctx.usage.totalCostUsd,
+        });
+
         this.eventBus?.emit("run.completed", {
           runId,
           agentName: currentAgent.name,
@@ -339,6 +476,10 @@ export class Runner {
       runId,
       totalTurns: maxTurns,
     };
+
+    await finalize("max_turns", currentAgent.name, maxTurns, ctx.usage);
+
+    runLogger.warn("run hit max turns", { maxTurns, duration: totalLatencyMs });
 
     this.eventBus?.emit("run.completed", {
       runId,
