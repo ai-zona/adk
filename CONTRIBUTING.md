@@ -25,16 +25,14 @@ Be respectful, inclusive, and constructive. We follow the [Contributor Covenant]
 
 ### Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Node.js | ≥ 20 |
-| pnpm | ≥ 10 |
-| TypeScript | 5.9 (installed automatically) |
+- **Node.js** ≥ 20
+- **pnpm** ≥ 10
+- **TypeScript** 5.9 (installed automatically)
 
 ### 1. Fork & Clone
 
 ```bash
-git clone https://github.com/<your-username>/adk.git
+git clone https://github.com/ai-zona/adk.git
 cd adk
 ```
 
@@ -47,26 +45,26 @@ pnpm install
 ### 3. Build All Packages
 
 ```bash
-pnpm build
+pnpm turbo run build
 ```
 
 ### 4. Run Tests
 
 ```bash
-pnpm test
+pnpm turbo run test
 ```
 
 ### 5. Type Check
 
 ```bash
-pnpm typecheck
+pnpm turbo run typecheck
 ```
 
 ### 6. Try an Example
 
 ```bash
 cd examples/hello-world
-ANTHROPIC_API_KEY=sk-ant-... npx tsx index.ts "Hello!"
+ANTHROPIC_API_KEY=*** npx tsx index.ts "Hello!"
 ```
 
 ---
@@ -120,23 +118,23 @@ pnpm --filter @aizona/adk build --watch
 pnpm --filter @aizona/adk test
 
 # Run all checks (build + typecheck + test + lint)
-pnpm build && pnpm typecheck && pnpm test && pnpm lint
+pnpm turbo run build && pnpm turbo run typecheck && pnpm turbo run test
 ```
 
 ---
 
 ## Pull Request Process
 
-1. **Open an issue first** for any non-trivial change so we can align before you invest time.
-2. **Keep PRs focused** — one logical change per PR. Split large changes.
-3. **All checks must pass**: build, typecheck, tests, lint.
-4. **Add/update tests** for any new behavior or bug fix.
-5. **Update docs** if you change public API surface (`docs/` or inline JSDoc).
-6. **Fill in the PR template** — describe what and why, link to the issue.
-7. A maintainer will review within **3 business days**. Expect at least one round of feedback.
-8. Once approved, a maintainer will squash-merge your PR.
+1. **Fork** the repository and create your branch from `main`.
+2. **Implement** your change with clear, focused commits.
+3. **Test** your changes — all checks must pass: build, typecheck, tests, lint.
+4. **Open a PR** against `main` with a descriptive title and linked issue.
+5. A maintainer will review within **3 business days**. Expect at least one round of feedback.
+6. Once approved, a maintainer will squash-merge your PR.
 
 ### PR Title Format
+
+Follow the same [Conventional Commits](#commit-messages) format used for commits:
 
 ```
 feat: add streaming support to Runner
@@ -149,7 +147,7 @@ chore: bump tsup to 9.x
 
 ## Code Style
 
-This project uses [Biome](https://biomejs.dev/) for formatting and linting (not ESLint/Prettier).
+This project uses [Biome](https://biomejs.dev/) for formatting and linting (not ESLint/Prettier) and **TypeScript strict mode** throughout.
 
 ```bash
 # Check for issues
@@ -175,7 +173,7 @@ Tests use [Vitest](https://vitest.dev/).
 
 ```bash
 # Run all tests
-pnpm test
+pnpm turbo run test
 
 # Watch mode
 pnpm --filter @aizona/adk exec vitest --watch
