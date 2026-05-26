@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm test
+
+  pack-install-test:
+    name: Pack & Install Consumer Test
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build @aizonaai/adk
+        run: pnpm --filter @aizonaai/adk build
+
+      - name: Pack @aizonaai/adk
+        run: cd packages/adk && pnpm pack --pack-destination /tmp
+
+      - name: Consumer test (CJS + ESM)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/consumer-test
+          cd /tmp/consumer-test
+          npm init -y >/dev/null
+          npm install /tmp/aizonaai-adk-*.tgz
+          node -e "const { defineAgent } = require('@aizonaai/adk'); console.log('CJS OK:', typeof defineAgent); if (typeof defineAgent !== 'function') process.exit(1);"
+          cat > test.mjs <<'EOF'
+          import { defineAgent } from "@aizonaai/adk";
+          console.log("ESM OK:", typeof defineAgent);
+          if (typeof defineAgent !== "function") process.exit(1);
+          EOF
+          node test.mjs
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: pnpm audit
+        run: pnpm audit --audit-level high
+        continue-on-error: true
+
+      - name: Secret scan
+        run: |
+          set -euo pipefail
+          if grep -rnE 'sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|npm_[A-Za-z0-9]{20,}' \
+              packages/ --include='*.ts' --include='*.json' \
+              | grep -viE 'test|mock|example|placeholder|fixture|__tests__'; then
+            echo "::error::Potential secret detected in source"
+            exit 1
+          fi
+          echo "No secrets found"

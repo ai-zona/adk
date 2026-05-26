@@ -1,0 +1,16 @@
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/.cache
+.git
+.github
+.remember
+.vscode
+.idea
+*.log
+*.md
+!packages/*/README.md
+!README.md
+examples
+docs

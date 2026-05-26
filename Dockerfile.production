@@ -1,0 +1,58 @@
+# syntax=docker/dockerfile:1.7
+# ──────────────────────────────────────────────────────
+# Production image for @aizonaai/adk-server
+# Build: docker build -f Dockerfile.production -t aizonaai/adk-server:latest .
+# Run:   docker run -p 3456:3456 -e ADK_PORT=3456 aizonaai/adk-server:latest
+# ──────────────────────────────────────────────────────
+
+# ---------- Builder stage ----------
+FROM node:20-slim AS builder
+WORKDIR /app
+
+RUN npm install -g pnpm@10.29.2
+
+# Copy workspace manifests first for better layer caching.
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json turbo.json ./
+COPY packages/adk/package.json ./packages/adk/
+COPY packages/adk-server/package.json ./packages/adk-server/
+COPY packages/adk-cli/package.json ./packages/adk-cli/
+COPY packages/aza-client/package.json ./packages/aza-client/
+COPY packages/aza-protocol/package.json ./packages/aza-protocol/
+COPY packages/config/package.json ./packages/config/
+COPY packages/mcp-bridge/package.json ./packages/mcp-bridge/
+COPY packages/workspace-types/package.json ./packages/workspace-types/
+
+RUN pnpm install --no-frozen-lockfile
+
+# Copy source and build adk + adk-server (server depends on adk).
+COPY packages/adk ./packages/adk
+COPY packages/adk-server ./packages/adk-server
+
+RUN pnpm --filter @aizonaai/adk build \
+ && pnpm --filter @aizonaai/adk-server build
+
+# Prune to production-only deps for the runtime stage.
+RUN pnpm --filter @aizonaai/adk-server deploy --prod --legacy /prod/adk-server
+
+# ---------- Runtime stage ----------
+FROM node:20-slim AS runtime
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV ADK_PORT=3456
+
+# Run as non-root for safety.
+RUN groupadd -r adk && useradd -r -g adk -d /app adk
+
+COPY --from=builder --chown=adk:adk /prod/adk-server/dist ./dist
+COPY --from=builder --chown=adk:adk /prod/adk-server/node_modules ./node_modules
+COPY --from=builder --chown=adk:adk /prod/adk-server/package.json ./package.json
+
+USER adk
+
+EXPOSE 3456
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.ADK_PORT||3456)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "dist/start.js"]

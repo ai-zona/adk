@@ -69,7 +69,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup --format esm,cjs --dts --out-dir dist",
+    "build": "tsup",
     "build:tsc": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
