@@ -32,7 +32,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
         
       - name: Build packages
-        run: pnpm run build
+        run: |
+          pnpm --filter @aizona/adk run build
+          pnpm --filter @aizona/aza-protocol run build
+          pnpm --filter @aizona/aza-client run build
+          pnpm --filter @aizona/contracts-workspace-architect run build
+          pnpm --filter @aizona/adk-server run build
+          pnpm --filter @aizona/adk-cli run build
 
       # Publish in dependency order: leaf packages first, then dependents
       - name: Publish @aizona/adk (leaf - no @aizona deps)
