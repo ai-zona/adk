@@ -50,7 +50,29 @@ export interface RunConfig {
 
   /** Harness tools for long-running sessions */
   harness?: HarnessConfig;
+
+  /** Per-turn timeout in ms (default 30_000). Aborts the LLM call and tools for that turn. */
+  perTurnTimeoutMs?: number;
+
+  /** Total-run timeout in ms (default 300_000 / 5min). Stops the run and returns partial result. */
+  totalTimeoutMs?: number;
+
+  /** Per-run token budget (input+output). Stops once exceeded with status=budget_exceeded. */
+  maxTokens?: number;
+
+  /** Per-run cost budget in USD. Stops once exceeded with status=budget_exceeded. */
+  maxCostUsd?: number;
 }
+
+/** Status of a completed (or terminated) run */
+export type RunStatus =
+  | "complete"
+  | "incomplete"
+  | "error"
+  | "timeout"
+  | "budget_exceeded"
+  | "circuit_open"
+  | "aborted";
 
 /** Run result — output from Runner.run() */
 export interface RunResult {
@@ -92,6 +114,21 @@ export interface RunResult {
 
   /** Artifacts created during the run */
   artifacts?: Artifact[];
+
+  /**
+   * Terminal status of the run.
+   * - `complete`: agent finished naturally
+   * - `incomplete`: maxTurns reached without natural termination
+   * - `error`: an unrecoverable error was thrown
+   * - `timeout`: per-turn or total-run timeout hit
+   * - `budget_exceeded`: token/cost budget exhausted
+   * - `circuit_open`: provider circuit breaker open
+   * - `aborted`: external AbortSignal triggered
+   */
+  status?: RunStatus;
+
+  /** Human-readable reason for non-`complete` statuses. */
+  statusReason?: string;
 }
 
 /** Usage statistics for a run */
@@ -129,6 +166,21 @@ export type StreamEvent =
     }
   | { type: "turn_complete"; agentName: string; turnNumber: number }
   | { type: "run_complete"; result: RunResult }
+  | {
+      type: "timeout";
+      scope: "turn" | "run";
+      agentName: string;
+      turnNumber: number;
+      timeoutMs: number;
+    }
+  | {
+      type: "budget_exceeded";
+      kind: "tokens" | "cost";
+      agentName: string;
+      used: number;
+      limit: number;
+    }
+  | { type: "circuit_open"; providerId: string; retryAfterMs: number }
   | { type: "error"; error: string; agentName: string };
 
 /** Runner configuration */
@@ -159,6 +211,29 @@ export interface RunnerConfig {
 
   /** Enable code execution mode (programmatic tool calling) */
   enableCodeExecution?: boolean;
+
+  /** Default per-turn timeout in ms (default 30_000). Per-run override via RunConfig.perTurnTimeoutMs. */
+  defaultPerTurnTimeoutMs?: number;
+
+  /** Default total-run timeout in ms (default 300_000). Per-run override via RunConfig.totalTimeoutMs. */
+  defaultTotalTimeoutMs?: number;
+
+  /** Default per-run token budget. */
+  defaultMaxTokens?: number;
+
+  /** Default per-run cost budget USD. */
+  defaultMaxCostUsd?: number;
+
+  /** Circuit-breaker configuration. Pass `false` to disable; otherwise a CircuitBreakerConfig. */
+  circuitBreaker?: CircuitBreakerOptions | false;
+}
+
+/** Circuit-breaker configuration accepted by Runner */
+export interface CircuitBreakerOptions {
+  failureThreshold?: number;
+  cooldownMs?: number;
+  successThreshold?: number;
+  now?: () => number;
 }
 
 /** Tracing configuration */
