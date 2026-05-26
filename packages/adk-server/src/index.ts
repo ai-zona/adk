@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────────────
-// @aizona/adk-server — REST API Server
+// @aizonaai/adk-server — REST API Server
 // ──────────────────────────────────────────────────────
 
 export { createServer } from "./server";

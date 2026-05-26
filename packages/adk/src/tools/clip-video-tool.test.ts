@@ -5,7 +5,7 @@
 // The canonical implementation of `clipVideoTool` lives in
 // `@aizona/platform-agents/src/tools/media-tools.ts` (per spec §4.1, both
 // paths are viable; we chose the platform-agents path to avoid a
-// workspace dependency cycle from @aizona/adk → @aizona/platform-agents).
+// workspace dependency cycle from @aizonaai/adk → @aizona/platform-agents).
 //
 // The comprehensive 23-row test matrix from the spec §6.1 lives at
 // `packages/platform-agents/src/tools/clip-video-tool.test.ts` where it can

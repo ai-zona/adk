@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/adk-monorepo",
+  "name": "@aizonaai/adk-monorepo",
   "private": true,
   "description": "AIZona Agent Development Kit — Build governed AI agent teams",
   "repository": "https://github.com/ai-zona/adk",

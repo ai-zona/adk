@@ -12,7 +12,7 @@
  */
 
 import { z } from "zod";
-import { AnthropicProvider, Runner, defineAgent, defineTool } from "@aizona/adk";
+import { AnthropicProvider, Runner, defineAgent, defineTool } from "@aizonaai/adk";
 
 const draftEmailTool = defineTool({
   name: "draft_email",

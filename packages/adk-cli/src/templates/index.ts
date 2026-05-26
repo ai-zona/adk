@@ -17,14 +17,14 @@ const basicTemplate: TemplateFiles = {
         test: "aizona agent test ./agents",
       },
       dependencies: {
-        "@aizona/adk": "latest",
+        "@aizonaai/adk": "latest",
         zod: "^3.24.1",
       },
     },
     null,
     2,
   ),
-  "agents/my-agent.ts": `import { defineAgent, defineTool } from "@aizona/adk";
+  "agents/my-agent.ts": `import { defineAgent, defineTool } from "@aizonaai/adk";
 import { z } from "zod";
 
 const greetTool = defineTool({
@@ -58,7 +58,7 @@ export const myAgent = defineAgent({
 
 const multiAgentTemplate: TemplateFiles = {
   ...basicTemplate,
-  "agents/coordinator.ts": `import { defineAgent } from "@aizona/adk";
+  "agents/coordinator.ts": `import { defineAgent } from "@aizonaai/adk";
 
 export const coordinator = defineAgent({
   name: "coordinator",
@@ -69,14 +69,14 @@ export const coordinator = defineAgent({
   ],
 });
 `,
-  "agents/researcher.ts": `import { defineAgent } from "@aizona/adk";
+  "agents/researcher.ts": `import { defineAgent } from "@aizonaai/adk";
 
 export const researcher = defineAgent({
   name: "researcher",
   instructions: "You research topics and provide detailed information.",
 });
 `,
-  "agents/writer.ts": `import { defineAgent } from "@aizona/adk";
+  "agents/writer.ts": `import { defineAgent } from "@aizonaai/adk";
 
 export const writer = defineAgent({
   name: "writer",
@@ -87,7 +87,7 @@ export const writer = defineAgent({
 
 const mcpTemplate: TemplateFiles = {
   ...basicTemplate,
-  "agents/mcp-agent.ts": `import { defineAgent, mcpServerTools } from "@aizona/adk";
+  "agents/mcp-agent.ts": `import { defineAgent, mcpServerTools } from "@aizonaai/adk";
 
 // Connect to MCP server and get tools
 const tools = await mcpServerTools({

@@ -1,4 +1,4 @@
-import type { AZAEnvelope } from "@aizona/aza-protocol";
+import type { AZAEnvelope } from "@aizonaai/aza-protocol";
 import { AZA_CLIENT_VERSION } from "./index";
 
 // ──────────────────────────────────────────────────────

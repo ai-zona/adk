@@ -8,7 +8,7 @@
  *   ANTHROPIC_API_KEY=<key> npx tsx index.ts "Hello!"
  */
 
-import { AnthropicProvider, Runner, defineAgent } from "@aizona/adk";
+import { AnthropicProvider, Runner, defineAgent } from "@aizonaai/adk";
 
 const agent = defineAgent({
   name: "hello-world",

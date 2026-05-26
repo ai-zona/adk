@@ -142,7 +142,7 @@ export interface ToolCallTrace {
 }
 
 /**
- * ContentPart — multimodal message content. Mirrors @aizona/adk ContentPart
+ * ContentPart — multimodal message content. Mirrors @aizonaai/adk ContentPart
  * but is duplicated here so this contracts package depends on nothing.
  */
 export type ContentPart =

@@ -16,7 +16,7 @@ export default defineConfig({
   clean: true,
   splitting: false,
   // Externalize peer/runtime deps so install size stays small and consumers dedupe.
-  external: ["@aizona/adk", "@aizona/adk-server", "commander"],
+  external: ["@aizonaai/adk", "@aizonaai/adk-server", "commander"],
   target: "es2022",
   outDir: "dist",
   // `bin.ts` starts with `#!/usr/bin/env node`. tsup auto-preserves the shebang

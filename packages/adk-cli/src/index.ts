@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────────────
-// @aizona/adk-cli — AIZona Agent Development Kit CLI
+// @aizonaai/adk-cli — AIZona Agent Development Kit CLI
 // ──────────────────────────────────────────────────────
 
 export { createCLI } from "./cli";

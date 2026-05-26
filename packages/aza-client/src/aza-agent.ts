@@ -1,4 +1,4 @@
-import type { AZAEnvelope, AZAMessageType } from "@aizona/aza-protocol";
+import type { AZAEnvelope, AZAMessageType } from "@aizonaai/aza-protocol";
 import {
   MessageHandler,
   RedisStreamTransport,
@@ -7,7 +7,7 @@ import {
   createRedisClient,
   privateKeyFromHex,
   signMessage,
-} from "@aizona/aza-protocol";
+} from "@aizonaai/aza-protocol";
 import type Redis from "ioredis";
 import { HeartbeatSender } from "./heartbeat";
 import { AZA_CLIENT_VERSION } from "./index";
@@ -299,7 +299,7 @@ export class AZAAgent {
    *
    * Uses a two-tier dispatch strategy:
    *
-   * 1. **Direct MCP** (preferred): If `@aizona/mcp-bridge` is installed, creates
+   * 1. **Direct MCP** (preferred): If `@aizonaai/mcp-bridge` is installed, creates
    *    an MCPClient connection to the appropriate server and calls the tool
    *    synchronously. Server URL is resolved from environment variables using
    *    the convention `MCP_SERVER_<SERVER>_URL` or `MCP_DEFAULT_SERVER_URL`.
@@ -319,13 +319,13 @@ export class AZAAgent {
     const serverHint = dotIdx > 0 ? toolName.slice(0, dotIdx) : undefined;
     const mcpToolName = dotIdx > 0 ? toolName.slice(dotIdx + 1) : toolName;
 
-    // Attempt to invoke via @aizona/mcp-bridge if available.
+    // Attempt to invoke via @aizonaai/mcp-bridge if available.
     // The bridge is an optional peer dependency — if not installed, we
     // send the tool call as an AZA protocol message for server-side dispatch.
     try {
       // Use a variable for the module specifier so TypeScript does not attempt
-      // compile-time resolution of @aizona/mcp-bridge (optional peer dep).
-      const mcpBridgeModule = "@aizona/mcp-bridge";
+      // compile-time resolution of @aizonaai/mcp-bridge (optional peer dep).
+      const mcpBridgeModule = "@aizonaai/mcp-bridge";
       // biome-ignore lint/suspicious/noExplicitAny: optional dynamic import
       const { MCPClient } = (await import(/* webpackIgnore: true */ mcpBridgeModule)) as any;
 
@@ -368,7 +368,7 @@ export class AZAAgent {
         });
       }
     } catch (importErr) {
-      // @aizona/mcp-bridge is not installed — fall back to protocol message dispatch.
+      // @aizonaai/mcp-bridge is not installed — fall back to protocol message dispatch.
       // Send a tool invocation request over the AZA transport so the platform
       // can route it to the appropriate MCP server.
       if (this.connected && this.transport) {
@@ -387,7 +387,7 @@ export class AZAAgent {
       }
 
       throw new Error(
-        `Cannot invoke tool "${toolName}": @aizona/mcp-bridge not installed and agent is not connected to transport. ` +
+        `Cannot invoke tool "${toolName}": @aizonaai/mcp-bridge not installed and agent is not connected to transport. ` +
           `Original error: ${importErr instanceof Error ? importErr.message : String(importErr)}`,
       );
     }

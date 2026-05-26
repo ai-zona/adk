@@ -91,6 +91,6 @@ describe("Templates", () => {
     const files = getTemplate("basic");
     const parsed = JSON.parse(files["package.json"]!);
     expect(parsed.name).toBe("my-adk-project");
-    expect(parsed.dependencies["@aizona/adk"]).toBeTruthy();
+    expect(parsed.dependencies["@aizonaai/adk"]).toBeTruthy();
   });
 });

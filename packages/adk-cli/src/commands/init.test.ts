@@ -32,7 +32,7 @@ describe("initCommand", () => {
 
     const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
     expect(pkg.name).toBe("my-adk-project");
-    expect(pkg.dependencies["@aizona/adk"]).toBeDefined();
+    expect(pkg.dependencies["@aizonaai/adk"]).toBeDefined();
 
     const agentPath = path.join(tmpDir, "agents", "my-agent.ts");
     expect(fs.existsSync(agentPath)).toBe(true);

@@ -22,7 +22,7 @@ import type { SharedMemoryEntry, SharedMemoryNamespace, SharedMemoryStore } from
 
 // ── Generic DB client interface ───────────────────────
 // Mirrors the subset of the Prisma AgentMemoryRecord model that this store
-// needs. Using an interface keeps @aizona/adk independent of @aizona/db.
+// needs. Using an interface keeps @aizonaai/adk independent of @aizona/db.
 
 export interface SharedMemoryDbRecord {
   id: string;

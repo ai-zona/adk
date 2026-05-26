@@ -4,7 +4,7 @@
 //
 // The canonical implementation lives in
 // `packages/platform-agents/src/tools/media-tools.ts`. The platform-agents
-// package depends on `@aizona/adk` (workspace:*) — there is no reverse
+// package depends on `@aizonaai/adk` (workspace:*) — there is no reverse
 // dependency, so this ADK file cannot import the runtime tool without
 // creating a circular dependency.
 //

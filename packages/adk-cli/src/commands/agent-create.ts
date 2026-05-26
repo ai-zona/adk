@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 export async function agentCreateCommand(name: string): Promise<void> {
-  const agentCode = `import { defineAgent, defineTool } from "@aizona/adk";
+  const agentCode = `import { defineAgent, defineTool } from "@aizonaai/adk";
 import { z } from "zod";
 
 export const ${toCamelCase(name)}Agent = defineAgent({

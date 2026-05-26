@@ -2,7 +2,7 @@
 // ADK Hono Server
 // ──────────────────────────────────────────────────────
 
-import type { ADKLLMProvider, ProxyRouter } from "@aizona/adk";
+import type { ADKLLMProvider, ProxyRouter } from "@aizonaai/adk";
 import { Hono } from "hono";
 import { apiKeyAuth } from "./middleware/api-key-auth";
 import { corsMiddleware } from "./middleware/cors";

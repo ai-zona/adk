@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/adk",
+  "name": "@aizonaai/adk",
   "version": "0.1.0",
   "description": "AIZona Agent Development Kit — Build, deploy, and orchestrate AI agents",
   "type": "module",

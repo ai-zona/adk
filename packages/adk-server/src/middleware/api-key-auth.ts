@@ -2,7 +2,7 @@
 // API Key Authentication Middleware
 // ──────────────────────────────────────────────────────
 
-import { hashApiKey } from "@aizona/adk";
+import { hashApiKey } from "@aizonaai/adk";
 import type { Context, Next } from "hono";
 import type { ApiKeyRecord } from "../server";
 

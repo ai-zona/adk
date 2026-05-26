@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/adk-cli",
+  "name": "@aizonaai/adk-cli",
   "version": "0.1.0",
   "description": "AIZona ADK CLI \u2014 Scaffold, deploy, and manage AI agents",
   "type": "module",
@@ -30,11 +30,11 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/adk": "workspace:*",
+    "@aizonaai/adk": "workspace:*",
     "commander": "^13.1.0"
   },
   "optionalDependencies": {
-    "@aizona/adk-server": "^0.1.0"
+    "@aizonaai/adk-server": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -67,10 +67,10 @@
     "url": "https://github.com/ai-zona/adk/issues"
   },
   "peerDependencies": {
-    "@aizona/adk-server": "workspace:*"
+    "@aizonaai/adk-server": "workspace:*"
   },
   "peerDependenciesMeta": {
-    "@aizona/adk-server": {
+    "@aizonaai/adk-server": {
       "optional": true
     }
   }

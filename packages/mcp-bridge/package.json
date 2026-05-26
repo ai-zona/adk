@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/mcp-bridge",
+  "name": "@aizonaai/mcp-bridge",
   "version": "0.1.0",
   "description": "AIZona MCP Bridge — connect Model Context Protocol servers to the AIZona agent platform",
   "type": "module",

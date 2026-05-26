@@ -40,7 +40,7 @@ async function cmdInit(name = "my-agent"): Promise<void> {
 
   await writeFile(
     join(root, "src", "agent.ts"),
-    `import { defineAgent, Runner, AnthropicProvider } from "@aizona/adk";
+    `import { defineAgent, Runner, AnthropicProvider } from "@aizonaai/adk";
 
 const agent = defineAgent({
   name: "${name}",
@@ -72,7 +72,7 @@ console.log(result.output);
           typecheck: "tsc --noEmit",
         },
         dependencies: {
-          "@aizona/adk": "latest",
+          "@aizonaai/adk": "latest",
           zod: "^3.24.1",
         },
         devDependencies: {
@@ -146,7 +146,7 @@ async function cmdTest(file: string | undefined): Promise<void> {
   console.log("  npx vitest run");
   console.log();
   console.log("Run the eval harness:");
-  console.log("  import { defineEvalSuite, runEval } from '@aizona/adk'");
+  console.log("  import { defineEvalSuite, runEval } from '@aizonaai/adk'");
 }
 
 async function cmdDeploy(file: string | undefined): Promise<void> {

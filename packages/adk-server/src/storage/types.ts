@@ -2,7 +2,7 @@
 // ADK Server — Storage Backend Interfaces
 // ──────────────────────────────────────────────────────
 
-import type { SessionBackend } from "@aizona/adk";
+import type { SessionBackend } from "@aizonaai/adk";
 
 /** Agent record stored by AgentStore */
 export interface StoredAgent {

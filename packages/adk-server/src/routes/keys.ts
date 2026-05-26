@@ -2,7 +2,7 @@
 // API Key management routes
 // ──────────────────────────────────────────────────────
 
-import { generateApiKey } from "@aizona/adk";
+import { generateApiKey } from "@aizonaai/adk";
 import { Hono } from "hono";
 import type { KeyStore } from "../storage/types";
 

@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────────────
-// @aizona/adk — AIZona Agent Development Kit
+// @aizonaai/adk — AIZona Agent Development Kit
 // ──────────────────────────────────────────────────────
 
 // Types

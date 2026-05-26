@@ -59,17 +59,17 @@ export function createValidateCommand(): Command {
 
           // Check 3: ADK dependency present
           const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-          if (deps["@aizona/adk"]) {
+          if (deps["@aizonaai/adk"]) {
             results.push({
               check: "adk-dependency",
               passed: true,
-              message: `@aizona/adk version: ${deps["@aizona/adk"]}`,
+              message: `@aizonaai/adk version: ${deps["@aizonaai/adk"]}`,
             });
           } else {
             results.push({
               check: "adk-dependency",
               passed: false,
-              message: "@aizona/adk not found in dependencies",
+              message: "@aizonaai/adk not found in dependencies",
             });
           }
 

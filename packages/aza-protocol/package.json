@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/aza-protocol",
+  "name": "@aizonaai/aza-protocol",
   "version": "0.1.0",
   "description": "AIZona AZA Protocol — agent-to-agent messaging, identity, task management, and team orchestration",
   "type": "module",

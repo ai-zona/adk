@@ -13,7 +13,7 @@ import type {
   SessionCreateOptions,
   SessionListFilter,
   SessionUpdateOptions,
-} from "@aizona/adk";
+} from "@aizonaai/adk";
 import type {
   AgentStore,
   KeyStore,

@@ -2,7 +2,7 @@
 // ADK Server — In-Memory Storage (default / standalone)
 // ──────────────────────────────────────────────────────
 
-import { MemorySessionBackend } from "@aizona/adk";
+import { MemorySessionBackend } from "@aizonaai/adk";
 import type {
   AgentStore,
   KeyStore,

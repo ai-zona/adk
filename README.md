@@ -5,7 +5,7 @@
 **Build governed AI agent teams with TypeScript.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![npm](https://img.shields.io/npm/v/@aizona/adk)](https://www.npmjs.com/package/@aizona/adk)
+[![npm](https://img.shields.io/npm/v/@aizonaai/adk)](https://www.npmjs.com/package/@aizonaai/adk)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
 
 [Getting Started](#getting-started) • [Documentation](https://docs.aizona.ai) • [Examples](./examples) • [AIZona Cloud](https://aizona.ai)
@@ -19,7 +19,7 @@
 The AIZona Agent Development Kit (ADK) is an open-source TypeScript SDK for building production multi-agent systems with built-in governance, metering, and trust.
 
 ```typescript
-import { defineAgent, defineTool, defineSkill } from '@aizona/adk';
+import { defineAgent, defineTool, defineSkill } from '@aizonaai/adk';
 
 const researcher = defineAgent({
   name: 'researcher',
@@ -62,18 +62,18 @@ const contentTeam = defineTeam({
 
 ```bash
 # Install the ADK
-npm install @aizona/adk
+npm install @aizonaai/adk
 
 # Or scaffold a new project
-npx @aizona/adk-cli init my-agent-project
+npx @aizonaai/adk-cli init my-agent-project
 cd my-agent-project
 
 # Start local dev server (BYOK — use your own API keys)
 export ANTHROPIC_API_KEY=sk-...
-npx @aizona/adk-cli dev
+npx @aizonaai/adk-cli dev
 
 # Deploy to AIZona Cloud (uses AIZ credits)
-npx @aizona/adk-cli deploy
+npx @aizonaai/adk-cli deploy
 ```
 
 ## BYOK (Bring Your Own Key)
@@ -95,12 +95,12 @@ When you deploy to AIZona Cloud, the platform manages keys, routing, caching, an
 
 | Package | Description | Status |
 |---------|-------------|--------|
-| [`@aizona/adk`](./packages/adk) | Core SDK — defineAgent, defineTool, defineSkill | ✅ |
-| [`@aizona/adk-cli`](./packages/adk-cli) | CLI — init, dev, test, deploy | ✅ |
-| [`@aizona/adk-server`](./packages/adk-server) | Local development server | ✅ |
-| [`@aizona/aza-protocol`](./packages/aza-protocol) | Agent-to-agent protocol spec | ✅ |
-| [`@aizona/aza-client`](./packages/aza-client) | AZA protocol client SDK | ✅ |
-| [`@aizona/mcp-bridge`](./packages/mcp-bridge) | MCP tool bridge (7,000+ integrations) | ✅ |
+| [`@aizonaai/adk`](./packages/adk) | Core SDK — defineAgent, defineTool, defineSkill | ✅ |
+| [`@aizonaai/adk-cli`](./packages/adk-cli) | CLI — init, dev, test, deploy | ✅ |
+| [`@aizonaai/adk-server`](./packages/adk-server) | Local development server | ✅ |
+| [`@aizonaai/aza-protocol`](./packages/aza-protocol) | Agent-to-agent protocol spec | ✅ |
+| [`@aizonaai/aza-client`](./packages/aza-client) | AZA protocol client SDK | ✅ |
+| [`@aizonaai/mcp-bridge`](./packages/mcp-bridge) | MCP tool bridge (7,000+ integrations) | ✅ |
 | [`@aizona/workspace-types`](./packages/workspace-types) | TypeScript types for workspace manifests | ✅ |
 
 ## How It Compares

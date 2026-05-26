@@ -33,23 +33,23 @@ jobs:
         
       - name: Build publishable packages
         run: |
-          pnpm --filter @aizona/adk run build
-          pnpm --filter @aizona/adk-server run build
+          pnpm --filter @aizonaai/adk run build
+          pnpm --filter @aizonaai/adk-server run build
         # Excluded from v0.1.0: adk-cli (DTS needs adk-server types), aza-protocol, aza-client, workspace-types
 
       # Publish in dependency order: leaf packages first, then dependents
-      - name: Publish @aizona/adk (leaf - no @aizona deps)
+      - name: Publish @aizonaai/adk (leaf - no @aizona deps)
         if: inputs.package == 'all' || inputs.package == 'adk' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/adk && npm publish --access public --provenance || echo "Already published or error"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
 
-      # Note: @aizona/aza-client and @aizona/contracts-workspace-architect excluded until build issues resolved
+      # Note: @aizonaai/aza-client and @aizonaai/contracts-workspace-architect excluded until build issues resolved
 
-      - name: Publish @aizona/adk-server (depends on @aizona/adk)
+      - name: Publish @aizonaai/adk-server (depends on @aizonaai/adk)
         if: inputs.package == 'all' || inputs.package == 'adk-server' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/adk-server && npm publish --access public --provenance || echo "Already published or error"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
           
-      # Note: @aizona/adk-cli excluded from v0.1.0 (DTS build needs adk-server types installed)
+      # Note: @aizonaai/adk-cli excluded from v0.1.0 (DTS build needs adk-server types installed)

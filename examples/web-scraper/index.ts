@@ -11,7 +11,7 @@
  */
 
 import { z } from "zod";
-import { AnthropicProvider, Runner, defineAgent, defineTool } from "@aizona/adk";
+import { AnthropicProvider, Runner, defineAgent, defineTool } from "@aizonaai/adk";
 
 const fetchUrlTool = defineTool({
   name: "fetch_url",

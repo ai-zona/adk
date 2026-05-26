@@ -2,7 +2,7 @@
 // aizona dev — Local development server
 // ──────────────────────────────────────────────────────
 //
-// `@aizona/adk-server` is lazy-loaded so the CLI works for every other command
+// `@aizonaai/adk-server` is lazy-loaded so the CLI works for every other command
 // (init / agent / keys / test / validate / login / skill-install / skill-publish)
 // even when adk-server is not installed. When a user runs `aizona dev` without
 // adk-server installed, we print an actionable error pointing at the install cmd.
@@ -16,20 +16,20 @@ export async function devCommand(options: DevOptions): Promise<void> {
 
   console.log("Starting ADK development server...\n");
 
-  let startStandaloneServer: typeof import("@aizona/adk-server").startStandaloneServer;
+  let startStandaloneServer: typeof import("@aizonaai/adk-server").startStandaloneServer;
   try {
-    ({ startStandaloneServer } = await import("@aizona/adk-server"));
+    ({ startStandaloneServer } = await import("@aizonaai/adk-server"));
   } catch (err) {
     console.error(
       [
-        "Error: `@aizona/adk-server` is not installed.",
+        "Error: `@aizonaai/adk-server` is not installed.",
         "",
         "The `aizona dev` command runs a local REST API server that requires the",
-        "@aizona/adk-server package. Install it alongside the CLI:",
+        "@aizonaai/adk-server package. Install it alongside the CLI:",
         "",
-        "  npm i -D @aizona/adk-server",
+        "  npm i -D @aizonaai/adk-server",
         "  # or",
-        "  pnpm add -D @aizona/adk-server",
+        "  pnpm add -D @aizonaai/adk-server",
         "",
         "Then re-run `aizona dev`.",
       ].join("\n"),

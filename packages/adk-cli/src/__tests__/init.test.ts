@@ -71,8 +71,8 @@ describe("buildScaffoldFiles", () => {
 
     const pkg = JSON.parse(files["package.json"]!);
     expect(pkg.name).toBe("test-agent");
-    expect(pkg.dependencies["@aizona/adk"]).toBeDefined();
-    expect(pkg.dependencies["@aizona/aza-client"]).toBeDefined();
+    expect(pkg.dependencies["@aizonaai/adk"]).toBeDefined();
+    expect(pkg.dependencies["@aizonaai/aza-client"]).toBeDefined();
 
     const tsconfig = JSON.parse(files["tsconfig.json"]!);
     expect(tsconfig.compilerOptions.strict).toBe(true);

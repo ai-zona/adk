@@ -1,4 +1,4 @@
-import type { ADKLLMProvider, ChatResponse } from "@aizona/adk";
+import type { ADKLLMProvider, ChatResponse } from "@aizonaai/adk";
 import { describe, expect, it, vi } from "vitest";
 import { createServer } from "../server";
 

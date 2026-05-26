@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/aza-client",
+  "name": "@aizonaai/aza-client",
   "version": "0.1.0",
   "description": "AIZona AZA Agent Client \u2014 connect external agents to the AIZona platform",
   "type": "module",
@@ -25,7 +25,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/aza-protocol": "workspace:*",
+    "@aizonaai/aza-protocol": "workspace:*",
     "ioredis": "^5.9.2"
   },
   "devDependencies": {

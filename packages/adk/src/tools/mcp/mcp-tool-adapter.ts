@@ -2,7 +2,7 @@
 // ADK MCP Tool Adapter
 // ──────────────────────────────────────────────────────
 // Adapts MCP tools into ADK ToolDef[] format.
-// Wraps @aizona/mcp-bridge when available, or connects
+// Wraps @aizonaai/mcp-bridge when available, or connects
 // directly to MCP servers via the lightweight connector.
 // ──────────────────────────────────────────────────────
 
@@ -65,7 +65,7 @@ interface MCPConnection {
  *
  * This is a lightweight adapter that converts MCP tool definitions
  * to ADK ToolDef format. For full MCP bridge features (rate limiting,
- * circuit breaking, output sanitization), use @aizona/mcp-bridge directly.
+ * circuit breaking, output sanitization), use @aizonaai/mcp-bridge directly.
  */
 export async function mcpServerTools(config: MCPServerConfig): Promise<ToolDef[]> {
   const connector = new MCPServerConnector(config);
@@ -253,9 +253,9 @@ export class MCPServerConnector {
   private async discoverViaStdio(): Promise<MCPToolInfo[]> {
     // Stdio transport requires spawning a process.
     // In a browser/edge environment, this falls back to empty.
-    // Full stdio support is available via @aizona/mcp-bridge.
+    // Full stdio support is available via @aizonaai/mcp-bridge.
     throw new Error(
-      "Stdio transport requires @aizona/mcp-bridge or Node.js child_process. " +
+      "Stdio transport requires @aizonaai/mcp-bridge or Node.js child_process. " +
         "Use transport: 'sse' or 'streamable-http' for lightweight MCP connections.",
     );
   }
@@ -263,7 +263,7 @@ export class MCPServerConnector {
   /** Invoke tool via stdio (placeholder) */
   private async invokeViaStdio(_toolName: string, _input: unknown): Promise<unknown> {
     throw new Error(
-      "Stdio transport requires @aizona/mcp-bridge. " +
+      "Stdio transport requires @aizonaai/mcp-bridge. " +
         "Use transport: 'sse' or 'streamable-http' for lightweight MCP connections.",
     );
   }

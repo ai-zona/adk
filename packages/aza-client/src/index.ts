@@ -4,7 +4,7 @@
 // High-level SDK for building agents on the AZA protocol.
 // Provides the AZAAgent class (connection, task lifecycle,
 // message handling), heartbeat management, and re-exports
-// commonly used types from @aizona/aza-protocol.
+// commonly used types from @aizonaai/aza-protocol.
 // ──────────────────────────────────────────────────────
 
 /** Client SDK version constant. */
@@ -31,8 +31,8 @@ export type {
   HeartbeatPayload,
   ConsentRequestPayload,
   ConsentResponsePayload,
-} from "@aizona/aza-protocol";
+} from "@aizonaai/aza-protocol";
 
 // Re-export value-level constants (TaskStatus enum object, AZAMessageType message type constants)
-export { TaskStatus } from "@aizona/aza-protocol";
-export { AZAMessageType as MessageTypes } from "@aizona/aza-protocol";
+export { TaskStatus } from "@aizonaai/aza-protocol";
+export { AZAMessageType as MessageTypes } from "@aizonaai/aza-protocol";

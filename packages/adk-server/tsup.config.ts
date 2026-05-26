@@ -12,7 +12,7 @@ export default defineConfig({
   clean: true,
   splitting: false,
   // Externalize all peer/runtime deps so consumers control them.
-  external: ["@aizona/adk", "@aizona/db", "hono", "@hono/node-server", "zod"],
+  external: ["@aizonaai/adk", "@aizona/db", "hono", "@hono/node-server", "zod"],
   target: "es2022",
   outDir: "dist",
 });

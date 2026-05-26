@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/adk-server",
+  "name": "@aizonaai/adk-server",
   "version": "0.1.0",
   "description": "AIZona ADK REST API Server \u2014 API key proxy, rate limiting, usage tracking, SSE/WS streaming",
   "type": "module",
@@ -29,7 +29,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@aizona/adk": "workspace:*",
+    "@aizonaai/adk": "workspace:*",
     "@hono/node-server": "^1.13.0",
     "hono": "^4.7.4",
     "zod": "^3.24.1"

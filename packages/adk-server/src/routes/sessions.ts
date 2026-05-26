@@ -2,7 +2,7 @@
 // Session routes
 // ──────────────────────────────────────────────────────
 
-import type { SessionBackend } from "@aizona/adk";
+import type { SessionBackend } from "@aizonaai/adk";
 import { Hono } from "hono";
 
 export function sessionRoutes(backend: SessionBackend): Hono {

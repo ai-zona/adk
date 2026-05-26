@@ -1,4 +1,4 @@
-// @aizona/contracts-workspace-architect — Day-0 contracts substrate.
+// @aizonaai/contracts-workspace-architect — Day-0 contracts substrate.
 //
 // Single source of truth for types, Zod schemas, RPC signatures, and
 // IPC protocol consumed by the 9 Workspace Architect implementation

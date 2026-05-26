@@ -1,5 +1,5 @@
 {
-  "name": "@aizona/contracts-workspace-architect",
+  "name": "@aizonaai/contracts-workspace-architect",
   "version": "0.1.0",
   "description": "AIZona Workspace Architect contracts — manifest types, WebSocket events, RPC procedures, IPC protocol",
   "type": "module",
