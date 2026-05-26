@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       package:
-        description: 'Package to publish (all, adk, adk-cli, adk-server, aza-client, workspace-types)'
+        description: 'Package to publish (all, adk, adk-server, aza-protocol, aza-client, mcp-bridge, workspace-types)'
         required: true
         default: 'all'
 
@@ -18,38 +18,67 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v4
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org'
-          
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
-        
+
       - name: Build publishable packages
         run: |
           pnpm --filter @aizonaai/adk run build
+          pnpm --filter @aizonaai/aza-protocol run build
+          pnpm --filter @aizonaai/contracts-workspace-architect run build
           pnpm --filter @aizonaai/adk-server run build
-        # Excluded from v0.1.0: adk-cli (DTS needs adk-server types), aza-protocol, aza-client, workspace-types
+          pnpm --filter @aizonaai/aza-client run build
+          pnpm --filter @aizonaai/mcp-bridge run build
+        # Excluded from v0.1.0: adk-cli (peerDep on adk-server blocks consumer install until adk-server is on registry)
 
-      # Publish in dependency order: leaf packages first, then dependents
-      - name: Publish @aizonaai/adk (leaf - no @aizona deps)
+      # ─── Tier 1: leaf packages (no @aizonaai workspace deps) ──────────────
+      - name: Publish @aizonaai/adk
         if: inputs.package == 'all' || inputs.package == 'adk' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/adk && npm publish --access public --provenance || echo "Already published or error"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
 
-      # Note: @aizonaai/aza-client and @aizonaai/contracts-workspace-architect excluded until build issues resolved
+      - name: Publish @aizonaai/aza-protocol
+        if: inputs.package == 'all' || inputs.package == 'aza-protocol' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/aza-protocol && npm publish --access public --provenance || echo "Already published or error"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
 
+      - name: Publish @aizonaai/contracts-workspace-architect
+        if: inputs.package == 'all' || inputs.package == 'workspace-types' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/workspace-types && npm publish --access public --provenance || echo "Already published or error"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
+
+      - name: Publish @aizonaai/mcp-bridge
+        if: inputs.package == 'all' || inputs.package == 'mcp-bridge' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/mcp-bridge && npm publish --access public --provenance || echo "Already published or error"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
+
+      # ─── Tier 2: depends on Tier 1 ────────────────────────────────────────
       - name: Publish @aizonaai/adk-server (depends on @aizonaai/adk)
         if: inputs.package == 'all' || inputs.package == 'adk-server' || startsWith(github.ref, 'refs/tags/')
         run: cd packages/adk-server && npm publish --access public --provenance || echo "Already published or error"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
-          
-      # Note: @aizonaai/adk-cli excluded from v0.1.0 (DTS build needs adk-server types installed)
+
+      - name: Publish @aizonaai/aza-client (depends on @aizonaai/aza-protocol)
+        if: inputs.package == 'all' || inputs.package == 'aza-client' || startsWith(github.ref, 'refs/tags/')
+        run: cd packages/aza-client && npm publish --access public --provenance || echo "Already published or error"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
+
+      # Note: @aizonaai/adk-cli excluded from v0.1.0
+      # Reason: peerDependency on @aizonaai/adk-server fails consumer install until adk-server is published.
+      # After adk-server publishes, re-enable adk-cli in a subsequent release.
