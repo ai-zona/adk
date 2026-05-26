@@ -31,14 +31,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
         
-      - name: Build packages
+      - name: Build publishable packages
         run: |
           pnpm --filter @aizona/adk run build
-          pnpm --filter @aizona/aza-protocol run build
-          pnpm --filter @aizona/aza-client run build
           pnpm --filter @aizona/contracts-workspace-architect run build
           pnpm --filter @aizona/adk-server run build
           pnpm --filter @aizona/adk-cli run build
+        # Note: aza-protocol and aza-client need @aizona/db extraction before they can build standalone.
+        # They are excluded from this workflow until that prerequisite is done.
 
       # Publish in dependency order: leaf packages first, then dependents
       - name: Publish @aizona/adk (leaf - no @aizona deps)
@@ -47,11 +47,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
 
-      - name: Publish @aizona/aza-client (leaf - depends on aza-protocol which is not published)
-        if: inputs.package == 'all' || inputs.package == 'aza-client' || startsWith(github.ref, 'refs/tags/')
-        run: cd packages/aza-client && npm publish --access public --provenance || echo "Already published or error"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AIZONA_TOKEN }}
+      # Note: @aizona/aza-client excluded until @aizona/db extraction is done
 
       - name: Publish @aizona/contracts-workspace-architect (leaf)
         if: inputs.package == 'all' || inputs.package == 'workspace-types' || startsWith(github.ref, 'refs/tags/')
